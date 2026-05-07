@@ -5,9 +5,11 @@ function Navbar() {
     <header className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-[0_10px_40px_rgba(15,23,42,0.06)]">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-emerald-200">
-            <span className="text-xl">✂</span>
-          </div>
+          <img
+            src="/tailoria.png"
+            alt="Tailoria Logo"
+            className="h-11 w-11 rounded-2xl shadow-lg shadow-emerald-200 object-cover"
+          />
           <div>
             <p className="text-lg font-black tracking-tight text-slate-900">Tailoria</p>
             <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Tailor orders</p>
