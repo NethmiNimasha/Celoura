@@ -68,9 +68,6 @@ function Login() {
             New here? <Link to="/signup" className="font-semibold text-teal-700 hover:text-teal-800">Create an account</Link>
           </p>
 
-          <div className="rounded-3xl border border-teal-100 bg-teal-50 p-4 text-sm text-teal-900">
-            Demo access is UI-only for now. Hook this form to your backend auth service when ready.
-          </div>
         </div>
       </section>
     </div>

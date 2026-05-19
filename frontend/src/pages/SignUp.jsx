@@ -82,9 +82,7 @@ function Register() {
             Already have an account? <Link to="/signin" className="font-semibold text-teal-700 hover:text-teal-800">Sign in</Link>
           </p>
 
-          <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
-            This is a UI prototype. Connect it to your API later if you want real authentication.
-          </div>
+          
         </div>
       </section>
     </div>
