@@ -1,0 +1,29 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/1yssb-y4t908k.js"
+3:"/_next/static/chunks/0u6_wk_3cmpq6.js"
+4:I[20146,["$2","$3"],"default"]
+5:I[32035,["$2","$3"],"default"]
+6:I[91168,["$2","$3"],"default"]
+7:I[74558,["$2","$3"],"default"]
+e:I[64381,["$2","$3"],"OutletBoundary"]
+f:"$Sreact.suspense"
+12:"ViewportBoundary"
+13:I[64381,["$2","$3"],"$12"]
+14:"MetadataBoundary"
+15:I[64381,["$2","$3"],"$14"]
+:HL["/_next/static/chunks/1kdt6kwhorros.css","style"]
+9:X
+c:X
+c:C
+d:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":"$0:t:t:d:r:props:children:1:props:children:props:children:1:props:children:props:notFound:0:1:props:style","children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":"$0:t:t:d:r:props:children:1:props:children:props:children:1:props:children:props:notFound:0:1:props:children:props:children:1:props:style","children":404}],["$","div",null,{"style":"$0:t:t:d:r:props:children:1:props:children:props:children:1:props:children:props:notFound:0:1:props:children:props:children:2:props:style","children":["$","h2",null,{"style":"$0:t:t:d:r:props:children:1:props:children:props:children:1:props:children:props:notFound:0:1:props:children:props:children:2:props:children:props:style","children":"This page could not be found."}]}]]}]}]],null,["$","$Le",null,{"children":["$","$f",null,{"name":"Next.MetadataOutlet","children":"$@10"}]}]]}],"p":"$@11","v":null,"s":"$9"}}]]
+a:[["children",{"s":"/_not-found","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L5",null,{"parallelRouterKey":"children","template":["$","$L6",null,{}]}]]}],"p":"$@b","v":"$c","s":"$9"},"c":"$Qd"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/1kdt6kwhorros.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1yssb-y4t908k.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/0u6_wk_3cmpq6.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"className":"min-h-screen bg-[#070709] text-zinc-100 antialiased selection:bg-amber-400/30 selection:text-white flex flex-col justify-between","children":[["$","$L4",null,{}],["$","main",null,{"className":"flex-1","children":["$","$L5",null,{"parallelRouterKey":"children","template":["$","$L6",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}],["$","$L7",null,{}]]}]}]]}],"p":"$@8","v":null,"s":"$9"},"c":"$Qa"},"h":{"r":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L13",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L15",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$f",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Celoura Fashion | Bespoke Custom Lehengas & Haute Couture"}],["$","meta","1",{"name":"description","content":"Celoura Fashion specializes in custom-made bridal Lehengas, royal velvet ensembles, and personalized dress tailoring. Your Dream Outfit, Designed Your Way. Kirindiwela, Sri Lanka."}],["$","meta","2",{"name":"keywords","content":"Celoura Fashion, custom lehenga, bridal lehenga Sri Lanka, bespoke dress tailoring, black and gold couture, custom women fashion, lehenga ordering system"}],["$","meta","3",{"property":"og:title","content":"Celoura Fashion | Your Dream Outfit, Designed Your Way"}],["$","meta","4",{"property":"og:description","content":"Custom-made Lehengas and couture fashion tailored to your exact measurements, color, and style."}],["$","meta","5",{"property":"og:url","content":"https://celourafashion.com"}],["$","meta","6",{"property":"og:site_name","content":"Celoura Fashion"}],["$","meta","7",{"property":"og:type","content":"website"}],["$","meta","8",{"name":"twitter:card","content":"summary"}],["$","meta","9",{"name":"twitter:title","content":"Celoura Fashion | Your Dream Outfit, Designed Your Way"}],["$","meta","10",{"name":"twitter:description","content":"Custom-made Lehengas and couture fashion tailored to your exact measurements, color, and style."}]]}]}],null]}],null]}],"p":"$@16","v":null,"s":"$9"}},"a":"$@17","u":"$@18","b":"9dkDgmV8v1sWIOnKRXl0E"}
+10:null
+9:300
+18:true
+9:C
+17:0
+b:"$undefined"
+8:"$undefined"
+16:"$undefined"
+11:"$undefined"

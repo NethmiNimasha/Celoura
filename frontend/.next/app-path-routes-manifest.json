@@ -1,0 +1,13 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/catalogue/page": "/catalogue",
+  "/contact/page": "/contact",
+  "/dashboard/page": "/dashboard",
+  "/order/page": "/order",
+  "/page": "/",
+  "/signin/page": "/signin",
+  "/signup/page": "/signup",
+  "/track/page": "/track"
+}
