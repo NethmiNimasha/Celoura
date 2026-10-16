@@ -4,6 +4,10 @@ services:
     build: ./frontend
     ports:
       - "5173:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
 
   db:
     image: postgres:16

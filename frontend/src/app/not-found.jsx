@@ -1,11 +1,18 @@
 import Link from "next/link";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/10 shadow-gold-sm mb-6">
-        <Sparkles className="h-8 w-8 text-amber-400" />
+      <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black/90 p-0.5 shadow-gold-md overflow-hidden">
+        <Image
+          src="/logo.png"
+          alt="Celoura Fashion Logo"
+          width={80}
+          height={80}
+          className="h-full w-full object-cover rounded-full"
+        />
       </div>
       <h1 className="font-cinzel text-4xl sm:text-5xl font-black text-white">404</h1>
       <h2 className="font-cinzel text-xl font-bold text-amber-300 mt-2">Haute Silhouette Not Found</h2>

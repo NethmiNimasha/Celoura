@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   Sparkles, 
@@ -95,12 +96,19 @@ export default function Navbar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Brand Logo */}
           <Link href="/" className="group flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-amber-400/40 bg-gradient-to-br from-amber-300/20 via-amber-500/10 to-transparent shadow-gold-sm transition group-hover:border-amber-400 group-hover:shadow-gold-md">
-              <Sparkles className="h-5 w-5 text-amber-300 transition group-hover:scale-110" />
+            <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-amber-400/50 bg-black/90 p-0.5 shadow-gold-sm transition-all duration-300 group-hover:scale-105 group-hover:border-amber-300 group-hover:shadow-gold-md overflow-hidden shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Celoura Fashion Logo"
+                width={48}
+                height={48}
+                className="h-full w-full object-cover rounded-full"
+                priority
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-cinzel text-2xl font-extrabold tracking-[0.2em] text-white">
+                <span className="font-cinzel text-xl sm:text-2xl font-extrabold tracking-[0.2em] text-white group-hover:text-amber-200 transition-colors">
                   CELOURA
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />

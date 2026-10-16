@@ -242,8 +242,14 @@ function OrderFormContent() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-amber-500/40 bg-[#0d0d14] p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/50 mb-6">
-            <Check className="h-8 w-8 text-amber-400" />
+          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black/90 p-0.5 shadow-gold-md overflow-hidden">
+            <Image
+              src="/logo.png"
+              alt="Celoura Fashion Logo"
+              width={80}
+              height={80}
+              className="h-full w-full object-cover rounded-full"
+            />
           </div>
 
           <span className="font-cinzel text-xs uppercase tracking-[0.3em] text-amber-400 font-bold">

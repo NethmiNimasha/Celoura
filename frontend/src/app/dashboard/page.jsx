@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   User, 
   Crown, 
@@ -68,8 +69,15 @@ export default function CustomerDashboard() {
       <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-8 shadow-2xl mb-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/10 shadow-gold-sm">
-              <Crown className="h-8 w-8 text-amber-400" />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black/90 p-0.5 shadow-gold-sm overflow-hidden shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Celoura Fashion Logo"
+                width={64}
+                height={64}
+                className="h-full w-full object-cover rounded-full"
+                priority
+              />
             </div>
             <div>
               <span className="font-cinzel text-xs uppercase tracking-widest text-amber-400 font-bold">

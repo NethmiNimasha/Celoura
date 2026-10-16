@@ -135,17 +135,29 @@ export default function AdminPage() {
       {/* Admin Header Section */}
       <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-8 shadow-2xl mb-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 uppercase tracking-widest mb-2">
-              <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
-              <span>Celoura Fashion Management</span>
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-full border-2 border-amber-400/50 bg-black/90 p-0.5 shadow-gold-md overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="Celoura Fashion Logo"
+                width={80}
+                height={80}
+                className="h-full w-full object-cover rounded-full"
+                priority
+              />
             </div>
-            <h1 className="font-cinzel text-3xl sm:text-4xl font-black text-white">
-              Administrator Atelier Portal
-            </h1>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-              Review incoming custom dress orders, assign tailors, adjust status, and maintain the fashion catalogue.
-            </p>
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 uppercase tracking-widest mb-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+                <span>Celoura Fashion Management</span>
+              </div>
+              <h1 className="font-cinzel text-3xl sm:text-4xl font-black text-white">
+                Administrator Atelier Portal
+              </h1>
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+                Review incoming custom dress orders, assign tailors, adjust status, and maintain the fashion catalogue.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Sparkles, 
   MapPin, 
@@ -28,13 +29,24 @@ export default function Footer() {
         <div className="grid gap-12 lg:grid-cols-4 sm:grid-cols-2">
           {/* Column 1: Brand Story */}
           <div className="space-y-4 lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-400/40 bg-amber-400/10">
-                <Sparkles className="h-4 w-4 text-amber-300" />
+            <Link href="/" className="inline-flex items-center gap-3 group">
+              <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/50 bg-black/80 p-0.5 shadow-gold-sm transition-all duration-300 group-hover:border-amber-300 group-hover:shadow-gold-md overflow-hidden shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Celoura Fashion Logo"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover rounded-full"
+                />
               </div>
-              <span className="font-cinzel text-xl font-bold tracking-[0.2em] text-white">
-                CELOURA
-              </span>
+              <div>
+                <span className="font-cinzel text-xl font-bold tracking-[0.2em] text-white group-hover:text-amber-200 transition-colors">
+                  CELOURA
+                </span>
+                <p className="font-cinzel text-[8px] uppercase tracking-[0.3em] text-amber-300/70">
+                  Fashion Atelier
+                </p>
+              </div>
             </Link>
             <p className="font-serif italic text-amber-300/90 text-sm">
               "{BUSINESS_INFO.tagline}"

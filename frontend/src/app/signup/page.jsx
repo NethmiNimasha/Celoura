@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
   Sparkles, 
@@ -35,8 +36,15 @@ export default function SignUpPage() {
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-8 shadow-2xl relative overflow-hidden">
         <div className="text-center mb-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/10 shadow-gold-sm mb-4">
-            <Crown className="h-7 w-7 text-amber-400" />
+          <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black p-0.5 shadow-gold-md overflow-hidden">
+            <Image
+              src="/logo.png"
+              alt="Celoura Fashion Logo"
+              width={80}
+              height={80}
+              className="h-full w-full object-cover rounded-full"
+              priority
+            />
           </div>
           <h1 className="font-cinzel text-2xl font-black text-white">
             Create Client Account

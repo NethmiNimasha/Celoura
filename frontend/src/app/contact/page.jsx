@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   MapPin, 
   Phone, 
@@ -55,16 +56,27 @@ export default function ContactPage() {
         {/* Left Column: Business Details & Location Card */}
         <div className="lg:col-span-5 space-y-6">
           <div className="card-luxury p-8 space-y-6">
-            <div>
-              <span className="font-cinzel text-xs uppercase tracking-widest text-amber-400 font-bold">
-                Registered Atelier
-              </span>
-              <h2 className="font-cinzel text-2xl font-bold text-white mt-1">
-                {BUSINESS_INFO.name}
-              </h2>
-              <p className="text-xs text-amber-300/90 italic font-serif mt-1">
-                "{BUSINESS_INFO.tagline}"
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="relative h-14 w-14 shrink-0 rounded-full border border-amber-400/50 bg-black/90 p-0.5 shadow-gold-sm overflow-hidden">
+                <Image
+                  src="/logo.png"
+                  alt="Celoura Fashion Logo"
+                  width={56}
+                  height={56}
+                  className="h-full w-full object-cover rounded-full"
+                />
+              </div>
+              <div>
+                <span className="font-cinzel text-xs uppercase tracking-widest text-amber-400 font-bold">
+                  Registered Atelier
+                </span>
+                <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-white mt-0.5">
+                  {BUSINESS_INFO.name}
+                </h2>
+                <p className="text-xs text-amber-300/90 italic font-serif">
+                  "{BUSINESS_INFO.tagline}"
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4 text-xs text-zinc-300 border-t border-zinc-800 pt-4">

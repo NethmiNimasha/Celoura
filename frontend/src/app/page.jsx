@@ -37,8 +37,16 @@ export default function HomePage() {
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6">
             {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 shadow-gold-sm">
-              <Crown className="h-3.5 w-3.5 text-amber-400" />
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/40 bg-amber-500/10 py-1.5 pl-2 pr-4 text-xs font-semibold text-amber-300 shadow-gold-sm">
+              <div className="relative h-6 w-6 rounded-full overflow-hidden border border-amber-400/60 shadow-sm shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Celoura Emblem"
+                  width={24}
+                  height={24}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <span>{BUSINESS_INFO.tagline}</span>
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
             </div>
