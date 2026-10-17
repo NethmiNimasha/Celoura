@@ -28,6 +28,7 @@ import {
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
+import { getStoredUser } from "../../lib/api";
 
 const COLOR_PALETTES = [
   { name: "Obsidian Black", hex: "#0a0a0c", border: "#d4af37", text: "text-amber-300" },
@@ -128,6 +129,24 @@ function OrderFormContent() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    const user = getStoredUser();
+    if (user) {
+      if (user.name) setCustomerName(user.name);
+      if (user.phone) setCustomerPhone(user.phone);
+      if (user.email) setCustomerEmail(user.email);
+
+      const userMeasKey = `celoura_measurements_${user.email}`;
+      const savedM = typeof window !== "undefined" ? localStorage.getItem(userMeasKey) : null;
+      if (savedM) {
+        try {
+          const parsed = JSON.parse(savedM);
+          setMeasurements((prev) => ({ ...prev, ...parsed }));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
     if (preselectedDesignId) {
       const found = INITIAL_DESIGNS.find((d) => d.id === preselectedDesignId);
       if (found) {

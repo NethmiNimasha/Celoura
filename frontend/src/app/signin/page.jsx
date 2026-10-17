@@ -53,38 +53,6 @@ export default function SignInPage() {
     }
   };
 
-  const handleDemoCustomer = async () => {
-    setEmail("ayesha.j@example.com");
-    setPassword("password123");
-    setError("");
-    setSuccessMsg("Signing in as Demo Client...");
-    setLoading(true);
-    try {
-      await loginUser({ email: "ayesha.j@example.com", password: "password123" });
-      setTimeout(() => router.push("/dashboard"), 700);
-    } catch {
-      router.push("/dashboard");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoAdmin = async () => {
-    setEmail("admin@celourafashion.com");
-    setPassword("admin123");
-    setError("");
-    setSuccessMsg("Signing in as Demo Admin...");
-    setLoading(true);
-    try {
-      await loginUser({ email: "admin@celourafashion.com", password: "admin123" });
-      setTimeout(() => router.push("/admin"), 700);
-    } catch {
-      router.push("/admin");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-8 shadow-2xl relative overflow-hidden">
@@ -105,29 +73,6 @@ export default function SignInPage() {
           <p className="text-xs text-zinc-400 mt-1">
             Access your custom orders, status tracker, and saved measurements.
           </p>
-        </div>
-
-        {/* Quick Demo Access Bar */}
-        <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 text-center space-y-2">
-          <p className="text-[11px] text-amber-300 font-semibold uppercase tracking-wider">
-            One-Click Instant Demo Login:
-          </p>
-          <div className="flex gap-2 justify-center">
-            <button
-              type="button"
-              onClick={handleDemoCustomer}
-              className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20"
-            >
-              Demo Client
-            </button>
-            <button
-              type="button"
-              onClick={handleDemoAdmin}
-              className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20"
-            >
-              Demo Admin
-            </button>
-          </div>
         </div>
 
         {error && (

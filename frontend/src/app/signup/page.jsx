@@ -117,38 +117,6 @@ function SignUpContent() {
     }
   };
 
-  const handleDemoCustomer = async () => {
-    setSigninEmail("ayesha.j@example.com");
-    setSigninPassword("password123");
-    setError("");
-    setSuccessMsg("Signing in as Demo Client...");
-    setLoading(true);
-    try {
-      await loginUser({ email: "ayesha.j@example.com", password: "password123" });
-      setTimeout(() => router.push("/dashboard"), 700);
-    } catch {
-      router.push("/dashboard");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoAdmin = async () => {
-    setSigninEmail("admin@celourafashion.com");
-    setSigninPassword("admin123");
-    setError("");
-    setSuccessMsg("Signing in as Demo Admin...");
-    setLoading(true);
-    try {
-      await loginUser({ email: "admin@celourafashion.com", password: "admin123" });
-      setTimeout(() => router.push("/admin"), 700);
-    } catch {
-      router.push("/admin");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
@@ -320,29 +288,6 @@ function SignUpContent() {
         {/* SIGN IN FORM */}
         {mode === "signin" && (
           <form onSubmit={handleSigninSubmit} className="space-y-4 text-xs animate-fade-in">
-            {/* Quick Demo Access */}
-            <div className="mb-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 text-center space-y-2">
-              <p className="text-[11px] text-amber-300 font-semibold uppercase tracking-wider">
-                Instant Demo Access:
-              </p>
-              <div className="flex gap-2 justify-center">
-                <button
-                  type="button"
-                  onClick={handleDemoCustomer}
-                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition cursor-pointer"
-                >
-                  Demo Client
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDemoAdmin}
-                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition cursor-pointer"
-                >
-                  Demo Admin
-                </button>
-              </div>
-            </div>
-
             <div>
               <label className="text-zinc-300 font-medium block mb-1">Email Address</label>
               <div className="relative">
