@@ -5,25 +5,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
-  Sparkles, 
-  Scissors, 
-  Search, 
   Phone, 
   MapPin, 
   Clock, 
-  Menu, 
-  X, 
   ShieldCheck, 
   Crown,
-  User,
-  ShoppingBag
 } from "lucide-react";
 import { BUSINESS_INFO } from "../lib/celouraData";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,18 +29,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Haute Catalogue", href: "/catalogue" },
-    { name: "Custom Dress Order", href: "/order" },
-    { name: "Track Order", href: "/track" },
-    { name: "Boutique & Contact", href: "/contact" },
-  ];
-
   return (
     <header className="sticky top-0 z-50 w-full transition-all duration-300">
       {/* Top Luxury Announcement Bar */}
-      <div className="hidden sm:block border-b border-amber-500/15 bg-black/90 px-4 py-1.5 text-xs text-amber-200/80">
+      <div className="hidden sm:block border-b border-amber-500/15 bg-black/95 px-4 py-1.5 text-xs text-amber-200/80">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-amber-300">
@@ -57,7 +41,7 @@ export default function Navbar() {
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3 w-3 text-amber-400/70" />
-              <span>Kirindiwela, Sri Lanka</span>
+              <span>Akuressa, Sri Lanka</span>
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="h-3 w-3 text-amber-400/70" />
@@ -108,120 +92,42 @@ export default function Navbar() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-cinzel text-xl sm:text-2xl font-extrabold tracking-[0.2em] text-white group-hover:text-amber-200 transition-colors">
-                  CELOURA
+                <span className="font-cinzel text-xl sm:text-2xl font-bold tracking-[0.15em] text-white group-hover:text-amber-200 transition-colors">
+                  Celoura
                 </span>
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
               </div>
-              <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-amber-300/80">
-                Haute Couture & Tailoring
+              <p className="font-cinzel text-[8.5px] uppercase tracking-[0.3em] text-amber-300/80">
+                Custom Dresses · Your Style
               </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`relative text-sm font-medium tracking-wide transition-all hover:text-amber-300 ${
-                    isActive ? "text-amber-300 font-semibold" : "text-zinc-300"
-                  }`}
-                >
-                  {link.name}
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 shadow-gold-sm" />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Desktop Right CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* Navigation Items: Only Home and Signup */}
+          <div className="flex items-center gap-5 sm:gap-8">
             <Link
-              href="/dashboard"
-              className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-zinc-900/80 px-4 py-2 text-xs font-semibold text-zinc-200 transition hover:border-amber-400 hover:text-white"
+              href="/"
+              className={`relative text-xs sm:text-sm font-medium tracking-wide transition-all hover:text-amber-300 ${
+                pathname === "/" ? "text-amber-300 font-bold" : "text-zinc-300"
+              }`}
             >
-              <User className="h-3.5 w-3.5 text-amber-400" />
-              <span>Account</span>
+              Home
+              {pathname === "/" && (
+                <span className="absolute -bottom-1 sm:-bottom-1.5 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 shadow-gold-sm" />
+              )}
             </Link>
 
             <Link
-              href="/order"
-              className="btn-gold flex items-center gap-2 rounded-full px-5 py-2.5 text-xs uppercase tracking-wider text-black font-bold"
+              href="/signup"
+              className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                pathname === "/signup"
+                  ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
+                  : "btn-gold text-black shadow-gold-sm hover:scale-105"
+              }`}
             >
-              <Scissors className="h-3.5 w-3.5" />
-              <span>Custom Order</span>
+              Signup
             </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Link
-              href="/order"
-              className="btn-gold flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs uppercase tracking-wider text-black font-bold"
-            >
-              <Scissors className="h-3 w-3" />
-              <span>Order</span>
-            </Link>
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-amber-500/30 bg-zinc-900 text-amber-300 hover:border-amber-400"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="border-b border-amber-500/20 bg-[#0b0b10] px-4 py-5 lg:hidden">
-            <div className="flex flex-col space-y-3">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                      isActive 
-                        ? "bg-amber-400/10 text-amber-300 border border-amber-500/30 font-semibold" 
-                        : "text-zinc-300 hover:bg-zinc-900"
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                );
-              })}
-
-              <div className="pt-2 border-t border-zinc-800 flex flex-col gap-2">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200"
-                >
-                  <User className="h-4 w-4 text-amber-400" />
-                  <span>Customer Dashboard</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200"
-                >
-                  <ShieldCheck className="h-4 w-4 text-amber-400" />
-                  <span>Admin Portal</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </nav>
     </header>
   );

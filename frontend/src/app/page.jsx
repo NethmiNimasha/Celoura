@@ -4,569 +4,515 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
-  Sparkles, 
   Scissors, 
-  Crown, 
-  ArrowRight, 
-  CheckCircle2, 
-  Star, 
+  Gem, 
   ShieldCheck, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  Ruler, 
+  Truck, 
+  ArrowRight, 
   Palette, 
-  Eye, 
-  Heart,
-  ChevronRight,
-  Gem,
-  Award
+  Star, 
+  Sparkles, 
+  X, 
+  Phone, 
+  MessageCircle,
+  Eye,
+  Check,
+  Crown
 } from "lucide-react";
-import { BUSINESS_INFO, INITIAL_DESIGNS } from "../lib/celouraData";
+import { BUSINESS_INFO, INITIAL_DESIGNS, GARMENT_TYPES } from "../lib/celouraData";
+
+const CATEGORIES = [
+  {
+    title: "Frocks & Gowns",
+    subtitle: "Tailored Evening & Party Frocks",
+    image: "/images/frock-evening.jpg",
+    href: "/catalogue?category=Frocks+%26+Gowns",
+  },
+  {
+    title: "Saree Blouses",
+    subtitle: "Handcrafted Aari & Zardozi Blouses",
+    image: "/images/saree-blouse.jpg",
+    href: "/catalogue?category=Saree+Blouses",
+  },
+  {
+    title: "Designer Skirts",
+    subtitle: "Flared Silk & Brocade Maxi Skirts",
+    image: "/images/skirt-flare.jpg",
+    href: "/catalogue?category=Designer+Skirts",
+  },
+  {
+    title: "Couture Blouses",
+    subtitle: "Corsets, Peplums & Crop Tops",
+    image: "/images/blouse-designer.jpg",
+    href: "/catalogue?category=Couture+Blouses",
+  },
+  {
+    title: "Bridal Lehengas",
+    subtitle: "Royal Gold & Velvet Ensembles",
+    image: "/images/royal-bloom.jpg",
+    href: "/catalogue?category=Bridal+Lehengas",
+  },
+];
 
 export default function HomePage() {
   const [selectedDesignModal, setSelectedDesignModal] = useState(null);
-  const featuredDesigns = INITIAL_DESIGNS.filter((d) => d.featured);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState("all");
+  const filteredDesigns = activeCategoryFilter === "all"
+    ? INITIAL_DESIGNS
+    : INITIAL_DESIGNS.filter((d) => d.category === activeCategoryFilter);
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative px-4 pt-8 pb-20 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-          
-          {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/40 bg-amber-500/10 py-1.5 pl-2 pr-4 text-xs font-semibold text-amber-300 shadow-gold-sm">
-              <div className="relative h-6 w-6 rounded-full overflow-hidden border border-amber-400/60 shadow-sm shrink-0">
+    <div className="relative overflow-hidden bg-[#060608] text-white">
+      
+      {/* 1. HERO SECTION */}
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-10 sm:pb-16 lg:pb-24">
+        {/* Ambient gold glow */}
+        <div className="absolute top-1/4 right-1/4 -z-10 h-96 w-96 rounded-full bg-amber-500/10 blur-[130px] pointer-events-none" />
+        
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
+            
+            {/* Hero Left Content (5 cols) */}
+            <div className="lg:col-span-5 space-y-6 z-10">
+              <span className="font-cinzel text-xs font-semibold tracking-[0.3em] uppercase text-amber-300/90 block">
+                Welcome to Celoura
+              </span>
+
+              <h1 className="font-cinzel text-4xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight leading-[1.1]">
+                Custom Dresses <br />
+                <span className="font-script text-5xl sm:text-6xl lg:text-7xl font-normal text-[#f3d995] leading-none block mt-1">
+                  Made for Your Story
+                </span>
+              </h1>
+
+              <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-light max-w-md">
+                From bespoke frocks and designer skirts to hand-embroidered saree blouses, couture tops, and royal lehengas, we craft custom garments perfectly tailored to your exact measurements.
+              </p>
+
+              {/* Quick garment pill badges */}
+              <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-zinc-300">
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/5 px-3 py-1">Frocks</span>
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/5 px-3 py-1">Saree Blouses</span>
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/5 px-3 py-1">Designer Skirts</span>
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/5 px-3 py-1">Blouses</span>
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/5 px-3 py-1">Lehengas</span>
+              </div>
+
+              <div className="pt-2">
+                <Link
+                  href="/order"
+                  className="inline-flex items-center gap-2.5 rounded-full border border-amber-400/80 px-7 py-3 text-xs sm:text-sm font-medium tracking-wide text-amber-200 transition-all duration-300 hover:border-amber-300 hover:bg-amber-400 hover:text-black shadow-[0_0_15px_rgba(212,175,55,0.15)] group"
+                >
+                  <span>Order Your Custom Outfit</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Hero Right Visual (7 cols) */}
+            <div className="lg:col-span-7 relative">
+              <div className="relative mx-auto aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl border border-amber-500/20 group">
                 <Image
-                  src="/logo.png"
-                  alt="Celoura Emblem"
-                  width={24}
-                  height={24}
-                  className="h-full w-full object-cover"
+                  src="/images/hero-model.jpg"
+                  alt="Celoura Bespoke Haute Couture Black and Gold Dress"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 750px"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 />
-              </div>
-              <span>{BUSINESS_INFO.tagline}</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-            </div>
+                
+                {/* Subtle dark ambient overlays to blend seamlessly */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#060608]/70 via-transparent to-black/40 pointer-events-none" />
 
-            {/* Main Headline */}
-            <h1 className="font-cinzel text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
-              Couture Lehengas, <br />
-              <span className="gold-text-gradient">Handcrafted In Gold & Obsidian</span>
-            </h1>
-
-            {/* Description */}
-            <p className="max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed font-light">
-              Welcome to <strong className="text-amber-300 font-medium">Celoura Fashion</strong>. We design and tailor custom bridal Lehengas, royal velvet attire, and statement women's fashion in Kirindiwela, Sri Lanka. Submit your measurements, choose your silhouette, and track your outfit's creation in real time.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Link
-                href="/order"
-                className="btn-gold flex items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold uppercase tracking-wider text-black shadow-gold-md"
-              >
-                <Scissors className="h-4 w-4" />
-                <span>Design Custom Lehenga</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/catalogue"
-                className="btn-gold-outline flex items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-semibold tracking-wider"
-              >
-                <Eye className="h-4 w-4 text-amber-400" />
-                <span>Explore Catalogue</span>
-              </Link>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-amber-500/20">
-              <div className="space-y-1">
-                <p className="font-cinzel text-2xl sm:text-3xl font-extrabold text-amber-300">500+</p>
-                <p className="text-xs text-zinc-400 uppercase tracking-wider">Custom Outfits Handcrafted</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-cinzel text-2xl sm:text-3xl font-extrabold text-amber-300">100%</p>
-                <p className="text-xs text-zinc-400 uppercase tracking-wider">Bespoke Fitting Guarantee</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-cinzel text-2xl sm:text-3xl font-extrabold text-amber-300">4.9 ★</p>
-                <p className="text-xs text-zinc-400 uppercase tracking-wider">Brides & Clients Rating</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Right Visual: Haute Couture Showcase */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              {/* Gold Aura Glow behind image */}
-              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400/40 via-amber-600/30 to-amber-300/40 opacity-70 blur-2xl animate-pulse" />
-              
-              {/* Main Card Frame */}
-              <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-zinc-950 p-2.5 shadow-2xl">
-                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
-                  <Image
-                    src="/images/hero-lehenga.jpg"
-                    alt="Celoura Royal Black and Gold Bridal Lehenga"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 500px"
-                    priority
-                    className="object-cover object-center transition-transform duration-700 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                  
-                  {/* Floating Gold Couture Badge */}
-                  <div className="absolute top-4 left-4 rounded-full border border-amber-400/60 bg-black/80 backdrop-blur-md px-3.5 py-1.5 text-xs font-semibold text-amber-300 flex items-center gap-1.5 shadow-gold-sm">
-                    <Crown className="h-3.5 w-3.5 text-amber-400" />
-                    <span>Haute Couture Signature</span>
-                  </div>
-
-                  {/* Floating Bottom Card */}
-                  <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-amber-500/30 bg-black/85 backdrop-blur-md p-4 text-left">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-cinzel text-base font-bold text-white">The Royal Empress Lehenga</p>
-                        <p className="text-xs text-amber-300/90">Obsidian Black Silk & 24K Zari Work</p>
-                      </div>
-                      <span className="font-cinzel text-sm font-bold text-amber-400">
-                        LKR 185,000
-                      </span>
-                    </div>
-
-                    <div className="mt-3 flex items-center gap-2 pt-2 border-t border-zinc-800">
-                      <Link
-                        href="/order?design=CEL-DSG-01"
-                        className="btn-gold w-full text-center py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-black"
-                      >
-                        Customize This Design
-                      </Link>
-                    </div>
+                {/* Right side floating gold cursive overlay */}
+                <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 text-right pointer-events-none select-none z-10 pr-2">
+                  <div className="font-script text-3xl sm:text-4xl lg:text-5xl text-[#f5df8c] leading-[1.15] drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                    <p>Design</p>
+                    <p>Colour</p>
+                    <p>Style</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </section>
 
-      {/* Haute Couture Designs Collection (FR-01, FR-02, FR-03) */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-amber-500/15">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 uppercase tracking-widest mb-3">
-              <Sparkles className="h-3 w-3" />
-              <span>Signature Gallery</span>
+      {/* 2. TRUST / FEATURE BADGES BAR */}
+      <section className="border-y border-amber-500/20 bg-[#09090d]/90 py-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y divide-zinc-800/80 sm:divide-y-0 sm:divide-x sm:divide-zinc-800/80 gap-y-4">
+            
+            <div className="flex flex-col items-center justify-center text-center px-4 py-2">
+              <Scissors className="h-6 w-6 text-amber-400 mb-2 stroke-[1.5]" />
+              <p className="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wide">
+                Custom Made
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Frocks, Skirts, Blouses & Lehengas
+              </p>
             </div>
-            <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-white">
-              Featured Luxury Collections
-            </h2>
-            <p className="mt-2 text-sm text-zinc-400 max-w-xl">
-              Each design is handcrafted with timeless zardozi, bullion zari, and royal velvet fabrics. Fully customizable to your measurements and color preference.
-            </p>
+
+            <div className="flex flex-col items-center justify-center text-center px-4 py-2">
+              <Gem className="h-6 w-6 text-amber-400 mb-2 stroke-[1.5]" />
+              <p className="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wide">
+                Premium
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Silk, Velvet & Aari Zari
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center text-center px-4 py-2">
+              <ShieldCheck className="h-6 w-6 text-amber-400 mb-2 stroke-[1.5]" />
+              <p className="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wide">
+                Perfect Fit &
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Exact Anatomical Measurements
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center text-center px-4 py-2">
+              <Truck className="h-6 w-6 text-amber-400 mb-2 stroke-[1.5]" />
+              <p className="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wide">
+                On-Time
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Guaranteed Handover & Fitting
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3. EXPLORE OUR COLLECTION (5 Garment Categories: Frocks, Saree Blouses, Skirts, Blouses, Lehengas) */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <span className="font-cinzel text-xs uppercase tracking-[0.25em] text-amber-300/80 font-semibold block mb-1">
+              Explore Our Collection
+            </span>
+            <div className="flex items-center gap-3">
+              <h2 className="font-cinzel text-2xl sm:text-3xl font-medium text-white">
+                Find Your Perfect Style
+              </h2>
+              <span className="h-[1px] w-12 bg-amber-400/60 hidden sm:inline-block" />
+            </div>
           </div>
 
           <Link
             href="/catalogue"
-            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-300 hover:text-amber-200 transition-colors group"
           >
-            <span>View Complete Catalogue</span>
-            <ArrowRight className="h-4 w-4" />
+            <span>View All Collections</span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
-        {/* Designs Grid */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {featuredDesigns.map((design) => (
-            <div 
-              key={design.id}
-              className="card-luxury overflow-hidden group flex flex-col justify-between"
+        {/* 5 Categories Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat.title}
+              href={cat.href}
+              className="group relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950 transition-all duration-300 hover:border-amber-500/50 hover:shadow-gold-sm flex flex-col justify-end"
             >
-              <div className="relative aspect-[3/4] w-full overflow-hidden">
-                <Image
-                  src={design.image}
-                  alt={design.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0e] via-transparent to-transparent opacity-80" />
+              <Image
+                src={cat.image}
+                alt={cat.title}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+              />
+              {/* Bottom gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
 
-                {/* Category badge */}
-                <span className="absolute top-3 left-3 rounded-full border border-amber-400/30 bg-black/70 backdrop-blur-md px-3 py-1 text-[11px] font-semibold text-amber-300">
-                  {design.category}
-                </span>
-
-                {/* Starting Price tag */}
-                <span className="absolute top-3 right-3 rounded-full border border-amber-500/40 bg-amber-400/20 backdrop-blur-md px-3 py-1 text-xs font-bold text-amber-200">
-                  {design.priceFormatted}
-                </span>
-              </div>
-
-              {/* Design Details */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <h3 className="font-cinzel text-lg font-bold text-white group-hover:text-amber-300 transition">
-                    {design.title}
-                  </h3>
-                  <p className="mt-2 text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-                    {design.description}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-zinc-300">
-                    <span className="rounded-lg bg-zinc-900 border border-zinc-800 px-2.5 py-1">
-                      {design.fabric}
-                    </span>
-                    <span className="rounded-lg bg-zinc-900 border border-zinc-800 px-2.5 py-1 text-amber-300/80">
-                      {design.color}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-zinc-800 flex items-center gap-3">
-                  <button
-                    onClick={() => setSelectedDesignModal(design)}
-                    className="flex-1 rounded-full border border-amber-500/30 bg-zinc-900/90 py-2.5 text-xs font-semibold text-zinc-200 transition hover:border-amber-400 hover:text-white"
-                  >
-                    View Details
-                  </button>
-
-                  <Link
-                    href={`/order?design=${design.id}`}
-                    className="btn-gold flex-1 text-center rounded-full py-2.5 text-xs font-bold uppercase tracking-wider text-black"
-                  >
-                    Customize
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How Custom Ordering Works (Section 7 in README) */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-amber-500/15">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 uppercase tracking-widest mb-3">
-            <Scissors className="h-3 w-3" />
-            <span>The Celoura Experience</span>
-          </div>
-          <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-white">
-            Bespoke Tailoring In 4 Refined Steps
-          </h2>
-          <p className="mt-3 text-sm text-zinc-400">
-            Enjoy an effortless journey from concept to couture fitting, backed by master Sri Lankan artisans.
-          </p>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              step: "01",
-              title: "Discover or Request",
-              desc: "Browse our curated Lehenga catalogue or upload your dream silhouette and reference photos.",
-              icon: Eye,
-            },
-            {
-              step: "02",
-              title: "Select Color & Style",
-              desc: "Customize necklines, sleeve cuts, flare circumference, and choose from our royal color palette.",
-              icon: Palette,
-            },
-            {
-              step: "03",
-              title: "Submit Measurements",
-              desc: "Provide your measurements with our guided visual tool or book an in-person fitting at Kirindiwela.",
-              icon: Ruler,
-            },
-            {
-              step: "04",
-              title: "Track & Fitting Handover",
-              desc: "Follow every phase from Pending to In Progress, culminating in final handover or boutique collection.",
-              icon: ShieldCheck,
-            },
-          ].map((item, idx) => (
-            <div 
-              key={item.step} 
-              className="card-luxury p-6 relative flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/10">
-                    <item.icon className="h-6 w-6 text-amber-400" />
-                  </div>
-                  <span className="font-cinzel text-3xl font-black text-amber-500/20">
-                    {item.step}
-                  </span>
-                </div>
-                <h3 className="font-cinzel text-base font-bold text-white mb-2">
-                  {item.title}
+              <div className="relative z-10 p-4">
+                <h3 className="font-cinzel text-base sm:text-lg font-bold text-white group-hover:text-amber-200 transition-colors">
+                  {cat.title}
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  {item.desc}
+                <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                  {cat.subtitle}
                 </p>
+                <div className="mt-2 flex items-center gap-1 text-[11px] text-amber-300/90 font-medium">
+                  <span>Shop Now</span>
+                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center gap-1.5 text-xs text-amber-400/90 font-medium">
-                <span>Phase {item.step} of 04</span>
-                <ChevronRight className="h-3 w-3" />
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
-
-        {/* CTA Banner */}
-        <div className="mt-14 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-zinc-950 via-[#14141c] to-zinc-950 p-8 sm:p-12 text-center relative overflow-hidden">
-          <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-amber-400/10 blur-3xl" />
-          <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-white">
-            Have a unique bridal vision or special event?
-          </h3>
-          <p className="mt-2 text-sm text-zinc-400 max-w-xl mx-auto">
-            Our atelier brings your sketches and Pinterest moodboards to life with authentic zardozi embroidery and royal velvet fabrics.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/order"
-              className="btn-gold rounded-full px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-black shadow-gold-sm"
-            >
-              Start Custom Order Now
-            </Link>
-            <Link
-              href="/contact"
-              className="btn-gold-outline rounded-full px-8 py-3.5 text-xs font-semibold tracking-wider text-amber-300"
-            >
-              Book In-Person Consultation
-            </Link>
-          </div>
-        </div>
       </section>
 
-      {/* Artisanal Heritage & Fabric Excellence */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-amber-500/15">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl">
+      {/* 4. "CREATE YOUR OWN LOOK" - Custom Dress Order Banner */}
+      <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-16 sm:mb-20">
+        <div className="relative rounded-2xl border border-amber-500/30 bg-[#0a0a0f] p-8 sm:p-12 overflow-hidden shadow-2xl">
+          
+          {/* Background image & gradient overlay */}
+          <div className="absolute inset-0 z-0">
             <Image
-              src="/images/velvet-lehenga.jpg"
-              alt="Celoura Master Tailoring and Velvet Craftsmanship"
+              src="/images/custom-measuring.jpg"
+              alt="Custom Dress Order Tailoring"
               fill
-              sizes="(max-width: 1024px) 100vw, 600px"
-              className="object-cover object-top"
+              className="object-cover object-center opacity-40 mix-blend-luminosity"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
-              <span className="font-cinzel text-xs uppercase tracking-widest text-amber-300">
-                Atelier Heritage
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0f] via-[#0a0a0f]/90 to-[#0a0a0f]/70" />
+          </div>
+
+          <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Content (7 cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              <span className="font-cinzel text-xs uppercase tracking-[0.25em] text-amber-300/90 font-semibold block">
+                Create Your Own Look
               </span>
-              <h4 className="font-cinzel text-xl font-bold text-white mt-1">
-                Hand-Stitched In Kirindiwela
-              </h4>
-              <p className="text-xs text-zinc-300 mt-1">
-                Combining centuries-old zardozi techniques with contemporary bridal silhouettes.
+
+              <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-normal text-white">
+                Custom Dress & Blouse Order
+              </h2>
+
+              <p className="text-xs sm:text-sm text-zinc-300 max-w-lg leading-relaxed font-light">
+                Tailoring bespoke frocks, skirts, saree blouses, corset tops and bridal lehengas. Choose your design, colour and style — and we'll bring it to life with expert master craftsmanship.
               </p>
+
+              {/* Garment selection indicators */}
+              <div className="flex flex-wrap gap-2 pt-1 text-xs">
+                <span className="rounded-lg border border-amber-400/40 bg-black/60 px-3 py-1.5 text-amber-200">
+                  👗 Frocks & Gowns
+                </span>
+                <span className="rounded-lg border border-amber-400/40 bg-black/60 px-3 py-1.5 text-amber-200">
+                  🥻 Saree Blouses
+                </span>
+                <span className="rounded-lg border border-amber-400/40 bg-black/60 px-3 py-1.5 text-amber-200">
+                  ✨ Designer Skirts
+                </span>
+                <span className="rounded-lg border border-amber-400/40 bg-black/60 px-3 py-1.5 text-amber-200">
+                  ✂️ Corsets & Blouses
+                </span>
+              </div>
+
+              <div className="pt-3">
+                <Link
+                  href="/order"
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-400/80 px-6 py-2.5 text-xs sm:text-sm font-medium text-amber-200 transition-all duration-300 hover:border-amber-300 hover:bg-amber-400 hover:text-black group shadow-gold-sm"
+                >
+                  <span>Start Your Custom Order</span>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 uppercase tracking-widest">
-              <Gem className="h-3 w-3" />
-              <span>Couture Standards</span>
-            </div>
-
-            <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-white">
-              Why Sri Lankan Brides Choose Celoura
-            </h2>
-
-            <div className="space-y-4">
-              {[
-                {
-                  title: "Pure Raw Silk & Micro-Velvet",
-                  desc: "We exclusively source premium grade raw silks, Italian velvets, and pure spun bullion zari threads for peerless drape and longevity.",
-                },
-                {
-                  title: "Precision Custom Measurements",
-                  desc: "Every choli neckline, waist curve, and lehenga hem is cut specifically to your proportions, including seam allowances for easy future adjustments.",
-                },
-                {
-                  title: "Transparent Workflow & Tracking",
-                  desc: "Watch your outfit progress through 6 structured statuses from order review to ready-for-fitting.",
-                },
-                {
-                  title: "Direct Tailor Communication",
-                  desc: "Speak directly with our senior couturiers via WhatsApp or visit our Kirindiwela studio for fabric touch-and-feel.",
-                },
-              ].map((feature, i) => (
-                <div key={i} className="flex items-start gap-3.5">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400/20 text-amber-300 shrink-0 mt-0.5">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">{feature.title}</h4>
-                    <p className="text-xs text-zinc-400 mt-0.5">{feature.desc}</p>
-                  </div>
+            {/* Right Steps Icons (5 cols) */}
+            <div className="lg:col-span-5 flex flex-col justify-center space-y-4 sm:space-y-5 lg:pl-12">
+              
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-black/60 text-amber-400 shrink-0">
+                  <Sparkles className="h-5 w-5 stroke-[1.5]" />
                 </div>
-              ))}
+                <div>
+                  <h4 className="font-cinzel text-sm sm:text-base font-semibold text-white">
+                    Choose Garment & Design
+                  </h4>
+                  <p className="text-[11px] text-zinc-400">Frock, Skirt, Blouse, Saree Blouse, or Lehenga</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-black/60 text-amber-400 shrink-0">
+                  <Palette className="h-5 w-5 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h4 className="font-cinzel text-sm sm:text-base font-semibold text-white">
+                    Select Colour & Fabric
+                  </h4>
+                  <p className="text-[11px] text-zinc-400">Raw Silk, Micro-Velvet, Brocade, or Georgette</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-black/60 text-amber-400 shrink-0">
+                  <Star className="h-5 w-5 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h4 className="font-cinzel text-sm sm:text-base font-semibold text-white">
+                    Submit Measurements
+                  </h4>
+                  <p className="text-[11px] text-zinc-400">Customized to your exact anatomical proportions</p>
+                </div>
+              </div>
+
             </div>
 
-            <div className="pt-4">
-              <Link
-                href="/track"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300"
-              >
-                <span>Have an existing order? Track its status</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
           </div>
+
         </div>
       </section>
 
-      {/* Boutique Location & Contact Spotlight (FR-11) */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-amber-500/15">
-        <div className="rounded-3xl border border-amber-500/30 bg-[#0e0e14] p-8 sm:p-12">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <span className="font-cinzel text-xs uppercase tracking-[0.25em] text-amber-400 font-bold">
-                Visit Our Studio
-              </span>
-              <h2 className="font-cinzel text-3xl font-extrabold text-white mt-2">
-                Celoura Fashion Boutique
+      {/* 5. "FEATURED COLLECTION" - "Most Loved Designs —" with Category Filter Tabs */}
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <span className="font-cinzel text-xs uppercase tracking-[0.25em] text-amber-300/80 font-semibold block mb-1">
+              Featured Collection
+            </span>
+            <div className="flex items-center gap-3">
+              <h2 className="font-cinzel text-2xl sm:text-3xl font-medium text-white">
+                Most Loved Designs
               </h2>
-              <p className="text-sm text-zinc-300 mt-3 leading-relaxed">
-                Experience our fabrics in person, view finished bridal lehengas, and discuss your custom color scheme with our head designer.
-              </p>
+              <span className="h-[1px] w-12 bg-amber-400/60 hidden sm:inline-block" />
+            </div>
+          </div>
 
-              <div className="mt-6 space-y-3 text-sm text-zinc-300">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white">Boutique Address:</strong>
-                    <p className="text-zinc-400">{BUSINESS_INFO.address}</p>
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-2">
+            {GARMENT_TYPES.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => setActiveCategoryFilter(type.id === "all" ? "all" : type.label)}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                  (activeCategoryFilter === "all" && type.id === "all") ||
+                  activeCategoryFilter === type.label
+                    ? "bg-amber-400 text-black font-semibold shadow-gold-sm"
+                    : "border border-zinc-800 bg-zinc-900/80 text-zinc-300 hover:border-amber-400/50 hover:text-white"
+                }`}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+          {filteredDesigns.slice(0, 10).map((item) => {
+            return (
+              <div
+                key={item.id}
+                onClick={() => setSelectedDesignModal(item)}
+                className="group flex flex-col justify-between rounded-xl border border-zinc-800/80 bg-[#0b0b10] p-2 sm:p-2.5 transition-all duration-300 hover:border-amber-500/40 hover:shadow-gold-sm cursor-pointer"
+              >
+                <div>
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-zinc-950">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
+                      className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    />
+                    {/* Category Tag pill */}
+                    <span className="absolute top-2 left-2 rounded-md bg-black/80 px-2 py-0.5 text-[9px] font-medium text-amber-300 border border-amber-400/30 backdrop-blur-sm">
+                      {item.category}
+                    </span>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-amber-400 shrink-0" />
-                  <div>
-                    <strong className="text-white">Telephone:</strong>
-                    <p className="text-zinc-400">
-                      <a href={`tel:${BUSINESS_INFO.phone}`} className="hover:text-amber-300">
-                        {BUSINESS_INFO.displayPhone} / {BUSINESS_INFO.phone}
-                      </a>
+                  <div className="mt-3 px-1">
+                    <h3 className="font-cinzel text-xs sm:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                      {item.fabric}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-amber-400 shrink-0" />
-                  <div>
-                    <strong className="text-white">Opening Hours:</strong>
-                    <p className="text-zinc-400">{BUSINESS_INFO.openingHours} (Open Daily)</p>
-                  </div>
+                <div className="mt-2 px-1 pt-1.5 flex items-center justify-between border-t border-zinc-800/60">
+                  <span className="font-sans text-xs font-semibold text-amber-300">
+                    {item.priceFormatted || `LKR ${item.price.toLocaleString()}`}
+                  </span>
+                  
+                  <span className="text-[10px] text-zinc-500 group-hover:text-amber-300 transition-colors flex items-center gap-0.5">
+                    View Details →
+                  </span>
                 </div>
               </div>
-
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  href="/contact"
-                  className="btn-gold rounded-full px-6 py-3 text-xs font-bold uppercase tracking-wider text-black"
-                >
-                  Schedule Boutique Visit
-                </Link>
-                <a
-                  href={`tel:${BUSINESS_INFO.phone}`}
-                  className="btn-gold-outline rounded-full px-6 py-3 text-xs font-semibold text-amber-300"
-                >
-                  Call Boutique
-                </a>
-              </div>
-            </div>
-
-            <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-amber-500/20">
-              <Image
-                src="/images/bridal-gold.jpg"
-                alt="Celoura Bridal Couture Showcase"
-                fill
-                sizes="(max-width: 1024px) 100vw, 500px"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-6">
-                <div className="rounded-xl border border-amber-500/30 bg-black/85 backdrop-blur-md p-4 w-full">
-                  <p className="font-cinzel text-xs uppercase tracking-wider text-amber-300">
-                    Bespoke Fittings
-                  </p>
-                  <p className="text-sm font-semibold text-white">
-                    Private bridal appointments available every week.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Quick Design Details Modal (FR-03) */}
+      {/* QUICK VIEW MODAL */}
       {selectedDesignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-amber-500/40 bg-[#0d0d12] shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-amber-500/40 bg-[#0d0d14] p-6 shadow-2xl">
             <button
               onClick={() => setSelectedDesignModal(null)}
-              className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/70 text-zinc-400 hover:text-white border border-zinc-700"
+              className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900/80 text-zinc-400 hover:text-white"
             >
-              ✕
+              <X className="h-4 w-4" />
             </button>
 
-            <div className="grid sm:grid-cols-2">
-              <div className="relative aspect-[3/4] sm:aspect-auto">
+            <div className="grid gap-6 sm:grid-cols-2 items-center">
+              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-amber-500/20">
                 <Image
                   src={selectedDesignModal.image}
                   alt={selectedDesignModal.title}
                   fill
-                  className="object-cover"
+                  className="object-cover object-top"
                 />
               </div>
 
-              <div className="p-6 flex flex-col justify-between space-y-4">
+              <div className="space-y-4 text-left">
                 <div>
-                  <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300">
+                  <span className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">
                     {selectedDesignModal.category}
                   </span>
-
-                  <h3 className="font-cinzel text-xl font-bold text-white mt-3">
+                  <h3 className="font-cinzel text-xl font-bold text-white mt-1">
                     {selectedDesignModal.title}
                   </h3>
-
-                  <p className="font-cinzel text-lg font-bold text-amber-400 mt-1">
-                    {selectedDesignModal.priceFormatted}
+                  <p className="font-sans text-lg font-bold text-amber-300 mt-1">
+                    {selectedDesignModal.priceFormatted || `LKR ${selectedDesignModal.price.toLocaleString()}`}
                   </p>
+                </div>
 
-                  <p className="text-xs text-zinc-300 mt-3 leading-relaxed">
-                    {selectedDesignModal.description}
-                  </p>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  {selectedDesignModal.description}
+                </p>
 
-                  <div className="mt-4 space-y-2 text-xs border-t border-zinc-800 pt-3">
-                    <p><strong className="text-zinc-200">Fabric:</strong> {selectedDesignModal.fabric}</p>
-                    <p><strong className="text-zinc-200">Embroidery:</strong> {selectedDesignModal.embroidery}</p>
-                    <p><strong className="text-zinc-200">Silhouette:</strong> {selectedDesignModal.silhouette}</p>
+                <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 text-xs space-y-1">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Fabric:</span>
+                    <strong className="text-zinc-200">{selectedDesignModal.fabric}</strong>
+                  </div>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Embroidery:</span>
+                    <strong className="text-zinc-200 text-right max-w-[180px] truncate">{selectedDesignModal.embroidery}</strong>
+                  </div>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Tailoring:</span>
+                    <strong className="text-amber-300">Custom Fitted to Order</strong>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-800 flex gap-3">
+                <div className="space-y-2 pt-2">
                   <Link
                     href={`/order?design=${selectedDesignModal.id}`}
-                    onClick={() => setSelectedDesignModal(null)}
-                    className="btn-gold w-full text-center rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black"
+                    className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold uppercase tracking-wider text-black shadow-gold-sm"
                   >
-                    Customize This Outfit
+                    <span>Customize This {selectedDesignModal.category.replace(/s$/, "")}</span>
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
+
+                  <a
+                    href={`${BUSINESS_INFO.whatsappUrl}&text=Hello%20Celoura,%20I'm%20interested%20in%20customizing%20${encodeURIComponent(selectedDesignModal.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-gold-outline flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold text-amber-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>Inquire via WhatsApp</span>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

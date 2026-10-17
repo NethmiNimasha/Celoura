@@ -90,6 +90,7 @@ function OrderFormContent() {
   const [submittedOrder, setSubmittedOrder] = useState(null);
 
   // Form State
+  const [garmentType, setGarmentType] = useState("Frocks & Gowns");
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [customDesignTitle, setCustomDesignTitle] = useState("");
   const [silhouette, setSilhouette] = useState(SILHOUETTES[0]);
@@ -132,6 +133,7 @@ function OrderFormContent() {
       if (found) {
         setSelectedDesign(found);
         setCustomDesignTitle(found.title);
+        if (found.category) setGarmentType(found.category);
         if (found.silhouette) setSilhouette(found.silhouette);
       }
     }
@@ -176,7 +178,7 @@ function OrderFormContent() {
       if (!customerPhone.trim()) {
         errs.customerPhone = "Contact phone number is required";
       } else if (!/^[0-9+ ]{9,14}$/.test(customerPhone.trim())) {
-        errs.customerPhone = "Please enter a valid phone number (e.g. 0717602641)";
+        errs.customerPhone = "Please enter a valid phone number (e.g. 0771699754)";
       }
       if (!customerEmail.trim()) {
         errs.customerEmail = "Email address is required";
@@ -289,7 +291,7 @@ function OrderFormContent() {
           </div>
 
           <p className="mt-6 text-xs text-zinc-400 max-w-lg mx-auto leading-relaxed">
-            Our Kirindiwela master tailor has received your specifications. We will review your measurements and reach out via phone or WhatsApp at <strong className="text-zinc-200">{submittedOrder.customerPhone}</strong> to confirm fitting arrangements.
+            Our Akuressa master tailor has received your specifications. We will review your measurements and reach out via phone or WhatsApp at <strong className="text-zinc-200">{submittedOrder.customerPhone}</strong> to confirm fitting arrangements.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
@@ -302,7 +304,7 @@ function OrderFormContent() {
             </Link>
 
             <a
-              href={`https://wa.me/94717602641?text=Hello%20Celoura%20Fashion,%20I%20just%20submitted%20order%20${submittedOrder.id}%20for%20${submittedOrder.customerName}.`}
+              href={`https://wa.me/94771699754?text=Hello%20Celoura%20Fashion,%20I%20just%20submitted%20order%20${submittedOrder.id}%20for%20${submittedOrder.customerName}.`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-gold-outline rounded-full px-8 py-3.5 text-xs font-semibold tracking-wider text-amber-300 flex items-center justify-center gap-2"
@@ -386,13 +388,56 @@ function OrderFormContent() {
               </p>
             </div>
 
-            {/* Design Selector */}
+            {/* Garment Type Selector */}
             <div className="space-y-3">
               <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                Foundation Design
+                1. Select Garment Category
               </label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {[
+                  { id: "Frocks & Gowns", label: "Frock / Gown", icon: "👗" },
+                  { id: "Saree Blouses", label: "Saree Blouse", icon: "🥻" },
+                  { id: "Designer Skirts", label: "Designer Skirt", icon: "✨" },
+                  { id: "Couture Blouses", label: "Blouse / Top", icon: "✂️" },
+                  { id: "Bridal Lehengas", label: "Bridal Lehenga", icon: "👑" },
+                ].map((gt) => (
+                  <button
+                    key={gt.id}
+                    type="button"
+                    onClick={() => {
+                      setGarmentType(gt.id);
+                      const matching = INITIAL_DESIGNS.find((d) => d.category === gt.id);
+                      if (matching) {
+                        setSelectedDesign(matching);
+                        setCustomDesignTitle(matching.title);
+                        if (matching.silhouette) setSilhouette(matching.silhouette);
+                      }
+                    }}
+                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
+                      garmentType === gt.id
+                        ? "border-amber-400 bg-amber-400/20 shadow-gold-sm text-white"
+                        : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-white"
+                    }`}
+                  >
+                    <span className="text-2xl mb-1">{gt.icon}</span>
+                    <span className="text-xs font-bold">{gt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Design Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                  2. Choose Foundation Design ({garmentType})
+                </label>
+                <span className="text-[11px] text-zinc-400">
+                  Click to select design inspiration
+                </span>
+              </div>
               <div className="grid sm:grid-cols-3 gap-4">
-                {INITIAL_DESIGNS.map((d) => {
+                {INITIAL_DESIGNS.filter((d) => d.category === garmentType).map((d) => {
                   const isSelected = selectedDesign?.id === d.id;
                   return (
                     <div
@@ -757,7 +802,7 @@ function OrderFormContent() {
               <div>
                 <strong className="text-amber-300">Celoura Fitting Guarantee:</strong>
                 <p className="mt-0.5 text-zinc-400">
-                  Not sure about your exact measurements? Enter approximate numbers. Our master tailors will contact you or welcome you to our Kirindiwela boutique for complimentary fine-fitting adjustments!
+                  Not sure about your exact measurements? Enter approximate numbers. Our master tailors will contact you or welcome you to our Akuressa boutique at No. 129, Yakabedda, Matara road, Akuressa for complimentary fine-fitting adjustments!
                 </p>
               </div>
             </div>
@@ -799,7 +844,7 @@ function OrderFormContent() {
                 </label>
                 <input
                   type="tel"
-                  placeholder="e.g. 0717602641 or +94 71 760 2641"
+                  placeholder="e.g. 0771699754 or +94 77 169 9754"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"

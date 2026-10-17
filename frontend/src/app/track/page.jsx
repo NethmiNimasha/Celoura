@@ -178,7 +178,7 @@ function TrackContent() {
               <div className="text-left sm:text-right space-y-1 text-xs text-zinc-400">
                 <p>Submitted on: <strong className="text-white">{selectedOrder.orderDate}</strong></p>
                 <p>Target Fitting Date: <strong className="text-amber-300">{selectedOrder.eventDate}</strong></p>
-                <p>Assigned Couturier: <strong className="text-zinc-200">{selectedOrder.assignedArtisan || "Celoura Kirindiwela Workshop"}</strong></p>
+                <p>Assigned Couturier: <strong className="text-zinc-200">{selectedOrder.assignedArtisan || "Celoura Akuressa Atelier"}</strong></p>
               </div>
             </div>
 
@@ -366,7 +366,7 @@ function TrackContent() {
 
               <div className="flex gap-3">
                 <a
-                  href={`https://wa.me/94717602641?text=Hello%20Celoura%20Fashion,%20I%20am%20inquiring%20about%20Order%20${selectedOrder.id}%20for%20${selectedOrder.customerName}.`}
+                  href={`https://wa.me/94771699754?text=Hello%20Celoura%20Fashion,%20I%20am%20inquiring%20about%20Order%20${selectedOrder.id}%20for%20${selectedOrder.customerName}.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-gold rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black flex items-center gap-2"

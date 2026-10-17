@@ -38,11 +38,11 @@ function CatalogueContent() {
 
   const categories = [
     "All",
+    "Frocks & Gowns",
+    "Saree Blouses",
+    "Designer Skirts",
+    "Couture Blouses",
     "Bridal Lehengas",
-    "Royal Velvet",
-    "Silk & Zari",
-    "Contemporary Fusion",
-    "Festive Pastel",
   ];
 
   const filteredDesigns = useMemo(() => {
@@ -74,10 +74,10 @@ function CatalogueContent() {
           <span>Haute Couture Catalogue</span>
         </div>
         <h1 className="font-cinzel text-4xl sm:text-5xl font-black text-white">
-          Discover Custom Lehenga Designs
+          Discover Custom Garments
         </h1>
         <p className="mt-3 text-sm sm:text-base text-zinc-300">
-          Explore our bespoke collection of bridal Lehengas, royal velvets, and festive ensembles. Select any design as your foundation, then customize necklines, sleeves, flare, and color.
+          Explore our handcrafted collection of bespoke frocks, saree blouses, designer skirts, couture tops, and bridal lehengas. Select any design as your foundation, then customize necklines, sleeves, flare, and color.
         </p>
       </div>
 
@@ -319,7 +319,7 @@ function CatalogueContent() {
                     className="btn-gold w-full text-center rounded-full py-3.5 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2"
                   >
                     <Scissors className="h-4 w-4" />
-                    <span>Customize & Order This Lehenga</span>
+                    <span>Customize & Order This Piece</span>
                   </Link>
                 </div>
               </div>

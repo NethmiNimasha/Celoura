@@ -169,7 +169,7 @@ export default function CustomerDashboard() {
 
                 <div className="mt-5 pt-3 border-t border-zinc-800 flex items-center justify-between">
                   <span className="text-[11px] text-zinc-400">
-                    Master Atelier: {order.assignedArtisan || "Kirindiwela Studio"}
+                    Master Atelier: {order.assignedArtisan || "Akuressa Atelier"}
                   </span>
 
                   <Link
@@ -269,7 +269,7 @@ export default function CustomerDashboard() {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 text-xs text-zinc-400 mt-4">
               <strong className="text-amber-300 block mb-1">Need In-Person Fitting?</strong>
               <p>
-                Visit our Kirindiwela boutique anytime between 8:00 AM – 6:00 PM for private measurement verification by master tailors.
+                Visit our boutique at No. 129, Yakabedda, Matara road, Akuressa anytime between 8:00 AM – 6:00 PM for private measurement verification by master tailors.
               </p>
               <Link
                 href="/contact"

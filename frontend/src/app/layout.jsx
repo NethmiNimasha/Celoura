@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 export const metadata = {
   metadataBase: new URL("https://celourafashion.com"),
   title: "Celoura Fashion | Bespoke Custom Lehengas & Haute Couture",
-  description: "Celoura Fashion specializes in custom-made bridal Lehengas, royal velvet ensembles, and personalized dress tailoring. Your Dream Outfit, Designed Your Way. Kirindiwela, Sri Lanka.",
+  description: "Celoura Fashion specializes in custom-made frocks, designer skirts, saree blouses, and bridal lehengas. Your Dream Outfit, Designed Your Way. No. 129, Yakabedda, Matara road, Akuressa, Sri Lanka.",
   keywords: "Celoura Fashion, custom lehenga, bridal lehenga Sri Lanka, bespoke dress tailoring, black and gold couture, custom women fashion, lehenga ordering system",
   icons: {
     icon: "/logo.png",

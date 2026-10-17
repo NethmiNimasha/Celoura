@@ -48,7 +48,7 @@ export default function ContactPage() {
           Visit Celoura Fashion
         </h1>
         <p className="mt-3 text-sm sm:text-base text-zinc-300">
-          Walk into our Kirindiwela boutique to feel our luxury silks and velvets, review hand-embroidered swatches, and have master tailors take your measurements in person.
+          Walk into our Akuressa boutique to feel our luxury silks and velvets, review hand-embroidered swatches, and have master tailors take your measurements in person.
         </p>
       </div>
 
@@ -147,14 +147,14 @@ export default function ContactPage() {
           <div className="rounded-3xl border border-amber-500/20 bg-zinc-950 p-6">
             <h3 className="font-cinzel text-sm font-bold text-white mb-2 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-amber-400" />
-              <span>Location in Kirindiwela</span>
+              <span>Location in Akuressa</span>
             </h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Located conveniently in Dellowita, Kirindiwela with dedicated client parking and private fitting suites for brides and families.
+              Located conveniently at No. 129, Yakabedda, Matara road, Akuressa with dedicated client parking and private fitting suites for brides, frocks, blouses, and custom dresses.
             </p>
             <div className="mt-4 rounded-2xl border border-zinc-800 bg-[#09090e] p-4 text-xs text-zinc-300 space-y-1">
-              <p><strong className="text-amber-300">Landmarks:</strong> Near Dellowita Junction, Kirindiwela Road</p>
-              <p><strong className="text-amber-300">Fitting Suites:</strong> 2 Private Bridal Chambers</p>
+              <p><strong className="text-amber-300">Address:</strong> No. 129, Yakabedda, Matara road, Akuressa</p>
+              <p><strong className="text-amber-300">Fitting Suites:</strong> 2 Private Bespoke Chambers</p>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function ContactPage() {
                       <input
                         type="tel"
                         required
-                        placeholder="e.g. 0717602641"
+                        placeholder="e.g. 0771699754"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
