@@ -9,6 +9,19 @@ services:
       - /app/node_modules
       - /app/.next
 
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Nethu2002
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16
     restart: always
