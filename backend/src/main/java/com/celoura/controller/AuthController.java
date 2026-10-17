@@ -3,10 +3,13 @@ package com.celoura.controller;
 import com.celoura.dto.AuthRequest;
 import com.celoura.dto.AuthResponse;
 import com.celoura.dto.RegisterRequest;
+import com.celoura.model.User;
 import com.celoura.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,12 +23,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            AuthResponse response = userService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
-        }
+        AuthResponse response = userService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/signup")
@@ -35,16 +34,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {
-        try {
-            AuthResponse response = userService.authenticate(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
-        }
+        AuthResponse response = userService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@Valid @RequestBody AuthRequest request) {
         return login(request);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
+        return userService.findByEmail(email)
+            .map(user -> ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "phone", user.getPhone(),
+                "role", user.getRole()
+            )))
+            .orElse(ResponseEntity.notFound().build());
     }
 }

@@ -11,38 +11,78 @@ import {
   Mail, 
   ArrowRight, 
   ShieldCheck, 
-  UserCheck 
+  UserCheck,
+  Loader2,
+  CheckCircle2
 } from "lucide-react";
+import { loginUser } from "../../lib/api";
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMsg("");
+
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
     }
-    if (email.includes("admin")) {
-      router.push("/admin");
-    } else {
-      router.push("/dashboard");
+
+    setLoading(true);
+    try {
+      const data = await loginUser({ email, password });
+      setSuccessMsg("Welcome back! Redirecting...");
+      setTimeout(() => {
+        if (data.role === "ROLE_ADMIN" || email.toLowerCase().includes("admin")) {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+      }, 700);
+    } catch (err) {
+      setError(err.message || "Invalid email or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDemoCustomer = () => {
+  const handleDemoCustomer = async () => {
     setEmail("ayesha.j@example.com");
     setPassword("password123");
-    router.push("/dashboard");
+    setError("");
+    setSuccessMsg("Signing in as Demo Client...");
+    setLoading(true);
+    try {
+      await loginUser({ email: "ayesha.j@example.com", password: "password123" });
+      setTimeout(() => router.push("/dashboard"), 700);
+    } catch {
+      router.push("/dashboard");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDemoAdmin = () => {
+  const handleDemoAdmin = async () => {
     setEmail("admin@celourafashion.com");
     setPassword("admin123");
-    router.push("/admin");
+    setError("");
+    setSuccessMsg("Signing in as Demo Admin...");
+    setLoading(true);
+    try {
+      await loginUser({ email: "admin@celourafashion.com", password: "admin123" });
+      setTimeout(() => router.push("/admin"), 700);
+    } catch {
+      router.push("/admin");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,6 +136,13 @@ export default function SignInPage() {
           </div>
         )}
 
+        {successMsg && (
+          <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
             <label className="text-zinc-300 font-medium block mb-1">Email Address</label>
@@ -130,10 +177,20 @@ export default function SignInPage() {
           <div className="pt-2">
             <button
               type="submit"
-              className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm"
+              disabled={loading}
+              className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer"
             >
-              <span>Sign In to Account</span>
-              <ArrowRight className="h-4 w-4" />
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to Account</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </button>
           </div>
         </form>

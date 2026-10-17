@@ -13,8 +13,10 @@ import {
   Phone, 
   ArrowRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
+import { registerUser, loginUser } from "../../lib/api";
 
 function SignUpContent() {
   const router = useRouter();
@@ -33,7 +35,9 @@ function SignUpContent() {
   const [signinEmail, setSigninEmail] = useState("");
   const [signinPassword, setSigninPassword] = useState("");
 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
     if (searchParams.get("mode") === "signin") {
@@ -43,42 +47,106 @@ function SignUpContent() {
     }
   }, [searchParams]);
 
-  const handleSignupSubmit = (e) => {
+  const handleSignupSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMsg("");
+
     if (!name || !phone || !signupEmail || !signupPassword) {
       setError("Please fill in all required fields.");
       return;
     }
-    setError("");
-    router.push("/dashboard");
+    if (signupPassword.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await registerUser({
+        name,
+        email: signupEmail,
+        phone,
+        password: signupPassword,
+      });
+
+      setSuccessMsg("Account created successfully! Connecting your atelier profile...");
+      setTimeout(() => {
+        if (data.role === "ROLE_ADMIN" || signupEmail.toLowerCase().includes("admin")) {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+      }, 900);
+    } catch (err) {
+      setError(err.message || "Failed to create account. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSigninSubmit = (e) => {
+  const handleSigninSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMsg("");
+
     if (!signinEmail || !signinPassword) {
       setError("Please enter both email and password.");
       return;
     }
-    setError("");
-    if (signinEmail.includes("admin")) {
-      router.push("/admin");
-    } else {
-      router.push("/dashboard");
+
+    setLoading(true);
+    try {
+      const data = await loginUser({
+        email: signinEmail,
+        password: signinPassword,
+      });
+
+      setSuccessMsg("Welcome back! Redirecting...");
+      setTimeout(() => {
+        if (data.role === "ROLE_ADMIN" || signinEmail.toLowerCase().includes("admin")) {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+      }, 800);
+    } catch (err) {
+      setError(err.message || "Invalid email or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDemoCustomer = () => {
+  const handleDemoCustomer = async () => {
     setSigninEmail("ayesha.j@example.com");
     setSigninPassword("password123");
     setError("");
-    router.push("/dashboard");
+    setSuccessMsg("Signing in as Demo Client...");
+    setLoading(true);
+    try {
+      await loginUser({ email: "ayesha.j@example.com", password: "password123" });
+      setTimeout(() => router.push("/dashboard"), 700);
+    } catch {
+      router.push("/dashboard");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDemoAdmin = () => {
+  const handleDemoAdmin = async () => {
     setSigninEmail("admin@celourafashion.com");
     setSigninPassword("admin123");
     setError("");
-    router.push("/admin");
+    setSuccessMsg("Signing in as Demo Admin...");
+    setLoading(true);
+    try {
+      await loginUser({ email: "admin@celourafashion.com", password: "admin123" });
+      setTimeout(() => router.push("/admin"), 700);
+    } catch {
+      router.push("/admin");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,7 +180,7 @@ function SignUpContent() {
         <div className="mb-6 grid grid-cols-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
           <button
             type="button"
-            onClick={() => { setMode("signup"); setError(""); }}
+            onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
             className={`rounded-xl py-2 text-xs font-bold transition-all ${
               mode === "signup"
                 ? "bg-amber-400 text-black shadow-gold-sm"
@@ -123,7 +191,7 @@ function SignUpContent() {
           </button>
           <button
             type="button"
-            onClick={() => { setMode("signin"); setError(""); }}
+            onClick={() => { setMode("signin"); setError(""); setSuccessMsg(""); }}
             className={`rounded-xl py-2 text-xs font-bold transition-all ${
               mode === "signin"
                 ? "bg-amber-400 text-black shadow-gold-sm"
@@ -137,6 +205,13 @@ function SignUpContent() {
         {error && (
           <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
             {error}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+            <span>{successMsg}</span>
           </div>
         )}
 
@@ -206,10 +281,20 @@ function SignUpContent() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm"
+                disabled={loading}
+                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer"
               >
-                <span>Create Account</span>
-                <ArrowRight className="h-4 w-4" />
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Creating Account...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             </div>
 
@@ -221,7 +306,7 @@ function SignUpContent() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setMode("signin"); setError(""); }}
+                  onClick={() => { setMode("signin"); setError(""); setSuccessMsg(""); }}
                   className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white underline transition-colors cursor-pointer"
                 >
                   <span>Sign In Here</span>
@@ -244,14 +329,14 @@ function SignUpContent() {
                 <button
                   type="button"
                   onClick={handleDemoCustomer}
-                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition"
+                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition cursor-pointer"
                 >
                   Demo Client
                 </button>
                 <button
                   type="button"
                   onClick={handleDemoAdmin}
-                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition"
+                  className="rounded-full border border-amber-400/40 bg-zinc-900 px-3 py-1 text-[11px] font-medium text-amber-300 hover:bg-amber-400/20 transition cursor-pointer"
                 >
                   Demo Admin
                 </button>
@@ -291,10 +376,20 @@ function SignUpContent() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm"
+                disabled={loading}
+                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer"
               >
-                <span>Sign In to Account</span>
-                <ArrowRight className="h-4 w-4" />
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign In to Account</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             </div>
 
@@ -304,7 +399,7 @@ function SignUpContent() {
                 Don't have an account yet?{" "}
                 <button
                   type="button"
-                  onClick={() => { setMode("signup"); setError(""); }}
+                  onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
                   className="text-amber-300 font-bold hover:underline ml-1 cursor-pointer"
                 >
                   Create an Account
