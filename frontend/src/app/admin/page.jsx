@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { 
   ShieldCheck, 
   Crown, 
@@ -25,7 +26,8 @@ import {
   Users,
   Sparkles,
   Save,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import { 
   getSavedOrders, 
@@ -36,6 +38,7 @@ import {
   ORDER_STATUSES,
   BUSINESS_INFO
 } from "../../lib/celouraData";
+import { getStoredUser, logoutUser } from "../../lib/api";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("orders"); // "orders" | "catalogue"
@@ -63,10 +66,24 @@ export default function AdminPage() {
     description: "",
   });
 
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
+    const user = getStoredUser();
+    if (!user || user.role !== "ROLE_ADMIN") {
+      router.push("/signin?role=admin");
+      return;
+    }
+    setAuthChecked(true);
     setOrders(getSavedOrders());
     setDesigns(getSavedDesigns());
-  }, []);
+  }, [router]);
+
+  const handleAdminSignOut = () => {
+    logoutUser();
+    router.push("/signin?role=admin");
+  };
 
   const handleStatusChange = (orderId, newStatus) => {
     const updated = updateOrderStatus(orderId, newStatus);
@@ -130,6 +147,17 @@ export default function AdminPage() {
     return matchesStatus && matchesSearch;
   });
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
+        <ShieldCheck className="h-10 w-10 text-amber-400 animate-pulse" />
+        <p className="font-cinzel text-xs uppercase tracking-widest text-amber-300">
+          Verifying Master Atelier Admin Credentials...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Admin Header Section */}
@@ -160,10 +188,10 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setActiveTab("orders")}
-              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition ${
+              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
                 activeTab === "orders"
                   ? "btn-gold text-black shadow-gold-sm"
                   : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white"
@@ -173,13 +201,20 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => setActiveTab("catalogue")}
-              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition ${
+              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
                 activeTab === "catalogue"
                   ? "btn-gold text-black shadow-gold-sm"
                   : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white"
               }`}
             >
               Catalogue ({designs.length})
+            </button>
+            <button
+              onClick={handleAdminSignOut}
+              className="btn-gold-outline rounded-full px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:border-amber-400 flex items-center gap-1.5 cursor-pointer transition"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Exit Admin</span>
             </button>
           </div>
         </div>

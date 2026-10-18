@@ -63,6 +63,36 @@ export async function loginUser({ email, password }) {
 }
 
 /**
+ * Sign in specifically as Admin
+ */
+export async function loginAdmin({ email, password }) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/admin/signin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Invalid admin credentials.");
+    }
+
+    if (typeof window !== "undefined" && data) {
+      localStorage.setItem("celoura_user", JSON.stringify(data));
+      if (data.token) {
+        localStorage.setItem("celoura_token", data.token);
+      }
+    }
+
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
  * Get current stored session
  */
 export function getStoredUser() {

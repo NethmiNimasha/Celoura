@@ -13,17 +13,21 @@ import {
   Phone, 
   ArrowRight,
   ShieldCheck,
+  UserCheck,
   CheckCircle2,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
-import { registerUser, loginUser } from "../../lib/api";
+import { registerUser, loginUser, loginAdmin } from "../../lib/api";
 
 function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "signin" ? "signin" : "signup";
+  const initialRole = searchParams.get("role") === "admin" ? "admin" : "client";
 
   const [mode, setMode] = useState(initialMode); // 'signup' or 'signin'
+  const [signinRole, setSigninRole] = useState(initialRole); // 'client' or 'admin'
 
   // Signup form state
   const [name, setName] = useState("");
@@ -44,6 +48,12 @@ function SignUpContent() {
       setMode("signin");
     } else if (searchParams.get("mode") === "signup") {
       setMode("signup");
+    }
+
+    if (searchParams.get("role") === "admin") {
+      setMode("signin");
+      setSigninRole("admin");
+      setSigninEmail("admin@celourafashion.com");
     }
   }, [searchParams]);
 
@@ -70,14 +80,14 @@ function SignUpContent() {
         password: signupPassword,
       });
 
-      setSuccessMsg("Account created successfully! Connecting your atelier profile...");
+      setSuccessMsg("Account created successfully! Redirecting to custom dress order...");
       setTimeout(() => {
         if (data.role === "ROLE_ADMIN" || signupEmail.toLowerCase().includes("admin")) {
           router.push("/admin");
         } else {
-          router.push("/dashboard");
+          router.push("/order");
         }
-      }, 900);
+      }, 700);
     } catch (err) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
@@ -97,19 +107,31 @@ function SignUpContent() {
 
     setLoading(true);
     try {
-      const data = await loginUser({
-        email: signinEmail,
-        password: signinPassword,
-      });
+      if (signinRole === "admin") {
+        const data = await loginAdmin({
+          email: signinEmail,
+          password: signinPassword,
+        });
 
-      setSuccessMsg("Welcome back! Redirecting...");
-      setTimeout(() => {
-        if (data.role === "ROLE_ADMIN" || signinEmail.toLowerCase().includes("admin")) {
+        setSuccessMsg("Admin credentials verified! Launching Atelier Management Portal...");
+        setTimeout(() => {
           router.push("/admin");
-        } else {
-          router.push("/dashboard");
-        }
-      }, 800);
+        }, 600);
+      } else {
+        const data = await loginUser({
+          email: signinEmail,
+          password: signinPassword,
+        });
+
+        setSuccessMsg("Welcome back! Redirecting...");
+        setTimeout(() => {
+          if (data.role === "ROLE_ADMIN" || signinEmail.toLowerCase().includes("admin")) {
+            router.push("/admin");
+          } else {
+            router.push("/dashboard");
+          }
+        }, 600);
+      }
     } catch (err) {
       setError(err.message || "Invalid email or password.");
     } finally {
@@ -117,13 +139,22 @@ function SignUpContent() {
     }
   };
 
+  const switchSigninRole = (role) => {
+    setSigninRole(role);
+    setError("");
+    setSuccessMsg("");
+    if (role === "admin" && !signinEmail) {
+      setSigninEmail("admin@celourafashion.com");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div className="rounded-3xl border border-amber-500/30 bg-[#0d0d14] p-8 shadow-2xl relative overflow-hidden">
         {/* Brand Logo Header */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-block group">
-            <div className="relative mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black p-0.5 shadow-gold-md overflow-hidden group-hover:scale-105 transition-all">
+            <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-400/50 bg-black p-0.5 shadow-gold-md overflow-hidden group-hover:scale-105 transition-all">
               <Image
                 src="/logo.png"
                 alt="Celoura Fashion Logo"
@@ -134,224 +165,293 @@ function SignUpContent() {
               />
             </div>
           </Link>
+
           <h1 className="font-cinzel text-2xl font-black text-white">
-            {mode === "signup" ? "Create Client Account" : "Welcome Back"}
+            {mode === "signup"
+              ? "Create Client Account"
+              : signinRole === "admin"
+              ? "Atelier Admin Sign In"
+              : "Welcome To Celoura"}
           </h1>
+
           <p className="text-xs text-zinc-400 mt-1">
-            {mode === "signup" 
+            {mode === "signup"
               ? "Join Celoura to store bespoke measurements and monitor custom orders."
-              : "Sign in to access your orders, status tracker, and saved designs."}
+              : signinRole === "admin"
+              ? "Restricted management portal for atelier directors & master couturiers."
+              : "Access your custom orders, status tracker, and saved measurements."}
           </p>
         </div>
 
-        {/* Tab Toggle: Sign Up / Sign In */}
-        <div className="mb-6 grid grid-cols-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
-          <button
-            type="button"
-            onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
-            className={`rounded-xl py-2 text-xs font-bold transition-all ${
-              mode === "signup"
-                ? "bg-amber-400 text-black shadow-gold-sm"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Create Account
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode("signin"); setError(""); setSuccessMsg(""); }}
-            className={`rounded-xl py-2 text-xs font-bold transition-all ${
-              mode === "signin"
-                ? "bg-amber-400 text-black shadow-gold-sm"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Sign In
-          </button>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
-            {error}
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        {/* SIGN UP FORM */}
-        {mode === "signup" && (
-          <form onSubmit={handleSignupSubmit} className="space-y-4 text-xs animate-fade-in">
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Full Name *</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ayesha Jayawardena"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Phone Number *</label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="tel"
-                  required
-                  placeholder="e.g. 0771699754"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Email Address *</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="email"
-                  required
-                  placeholder="ayesha@example.com"
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Create Password *</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="password"
-                  required
-                  placeholder="Minimum 6 characters"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="pt-2">
+        {/* SIGN IN VIEW - Matching exactly the screenshot */}
+        {mode === "signin" && (
+          <div className="animate-fade-in">
+            {/* Pill Toggle: Client Sign In vs Admin Sign In */}
+            <div className="mb-6 grid grid-cols-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
               <button
-                type="submit"
-                disabled={loading}
-                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer"
+                type="button"
+                onClick={() => switchSigninRole("client")}
+                className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer ${
+                  signinRole === "client"
+                    ? "bg-amber-400 text-black shadow-gold-sm"
+                    : "text-zinc-400 hover:text-white"
+                }`}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Creating Account...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Create Account</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
+                <UserCheck className="h-3.5 w-3.5" />
+                <span>Client Sign In</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => switchSigninRole("admin")}
+                className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer ${
+                  signinRole === "admin"
+                    ? "bg-amber-400 text-black shadow-gold-sm"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Admin Sign In</span>
               </button>
             </div>
 
-            {/* Prominent "Already have an account? Sign in" CTA */}
-            <div className="mt-6 pt-5 border-t border-zinc-800 text-center">
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3.5">
-                <p className="text-xs text-zinc-300">
-                  Already have an account?
-                </p>
+            {/* Admin Notice Banner if Admin selected */}
+            {signinRole === "admin" && (
+              <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200/90 flex items-start gap-2">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+                <div>
+                  <strong className="block text-amber-300">Authorized Personnel Only:</strong>
+                  <span>Sign in with the designated master admin credentials to access order management.</span>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSigninSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">
+                  {signinRole === "admin" ? "Special Admin Email" : "Email Address"}
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="email"
+                    required
+                    placeholder={signinRole === "admin" ? "admin@celourafashion.com" : "name@example.com"}
+                    value={signinEmail}
+                    onChange={(e) => setSigninEmail(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">
+                  {signinRole === "admin" ? "Special Admin Password" : "Password"}
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={signinPassword}
+                    onChange={(e) => setSigninPassword(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
                 <button
-                  type="button"
-                  onClick={() => { setMode("signin"); setError(""); setSuccessMsg(""); }}
-                  className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white underline transition-colors cursor-pointer"
+                  type="submit"
+                  disabled={loading}
+                  className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer hover:scale-[1.01] transition-transform"
                 >
-                  <span>Sign In Here</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{signinRole === "admin" ? "Authenticating Admin..." : "Signing In..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{signinRole === "admin" ? "Sign In to Admin Portal" : "Sign In to Account"}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          </form>
-        )}
+            </form>
 
-        {/* SIGN IN FORM */}
-        {mode === "signin" && (
-          <form onSubmit={handleSigninSubmit} className="space-y-4 text-xs animate-fade-in">
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="email"
-                  required
-                  placeholder="name@example.com"
-                  value={signinEmail}
-                  onChange={(e) => setSigninEmail(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-zinc-300 font-medium block mb-1">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={signinPassword}
-                  onChange={(e) => setSigninPassword(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Signing In...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Sign In to Account</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Switch back to Sign Up */}
-            <div className="mt-6 pt-5 border-t border-zinc-800 text-center">
-              <p className="text-xs text-zinc-400">
+            {/* Bottom Links exactly as in screenshot */}
+            <div className="mt-6 pt-6 border-t border-zinc-800 text-center text-xs text-zinc-400 space-y-2">
+              <p>
                 Don't have an account yet?{" "}
                 <button
                   type="button"
                   onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
-                  className="text-amber-300 font-bold hover:underline ml-1 cursor-pointer"
+                  className="text-amber-400 font-bold hover:underline cursor-pointer"
                 >
-                  Create an Account
+                  Register here
                 </button>
               </p>
+
+              {signinRole === "client" ? (
+                <p>
+                  Atelier Director or Staff?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchSigninRole("admin")}
+                    className="text-amber-300 font-bold hover:underline cursor-pointer"
+                  >
+                    Admin Atelier Sign In →
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Looking for client orders?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchSigninRole("client")}
+                    className="text-amber-400 font-bold hover:underline cursor-pointer"
+                  >
+                    Switch to Client Sign In →
+                  </button>
+                </p>
+              )}
             </div>
-          </form>
+          </div>
+        )}
+
+        {/* SIGN UP VIEW */}
+        {mode === "signup" && (
+          <div className="animate-fade-in">
+            {error && (
+              <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSignupSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">Full Name *</label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ayesha Jayawardena"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">Phone Number *</label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 0771699754"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">Email Address *</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="ayesha@example.com"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-medium block mb-1">Create Password *</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Minimum 6 characters"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 pl-10 pr-4 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-gold w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-sm disabled:opacity-60 cursor-pointer hover:scale-[1.01] transition-transform"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Creating Account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Already have an account prompt */}
+              <div className="mt-6 pt-5 border-t border-zinc-800 text-center">
+                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3.5">
+                  <p className="text-xs text-zinc-300">
+                    Already have an account?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setMode("signin"); setError(""); setSuccessMsg(""); }}
+                    className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white underline transition-colors cursor-pointer"
+                  >
+                    <span>Sign In Here</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </div>

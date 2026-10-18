@@ -43,6 +43,17 @@ public class AuthController {
         return login(request);
     }
 
+    @PostMapping("/admin/login")
+    public ResponseEntity<?> adminLogin(@Valid @RequestBody AuthRequest request) {
+        AuthResponse response = userService.authenticateAdmin(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/admin/signin")
+    public ResponseEntity<?> adminSignin(@Valid @RequestBody AuthRequest request) {
+        return adminLogin(request);
+    }
+
     @GetMapping("/user")
     public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
         return userService.findByEmail(email)

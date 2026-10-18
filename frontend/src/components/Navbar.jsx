@@ -12,10 +12,12 @@ import {
   Crown,
 } from "lucide-react";
 import { BUSINESS_INFO } from "../lib/celouraData";
+import { getStoredUser } from "../lib/api";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +28,19 @@ export default function Navbar() {
       }
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
+    // Track user login state for dynamic navbar options
+    const updateAuth = () => {
+      setCurrentUser(getStoredUser());
+    };
+    updateAuth();
+    window.addEventListener("storage", updateAuth);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("storage", updateAuth);
+    };
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full transition-all duration-300">
@@ -102,13 +115,14 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Navigation Items: Only Home and Signup */}
+          {/* Navigation Items: Home and (Order if signed in / Signup if not) */}
           <div className="flex items-center gap-5 sm:gap-8">
             <Link
               href="/"
               className={`relative text-xs sm:text-sm font-medium tracking-wide transition-all hover:text-amber-300 ${
                 pathname === "/" ? "text-amber-300 font-bold" : "text-zinc-300"
               }`}
+              
             >
               Home
               {pathname === "/" && (
@@ -116,16 +130,29 @@ export default function Navbar() {
               )}
             </Link>
 
-            <Link
-              href="/signup"
-              className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                pathname === "/signup"
-                  ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
-                  : "btn-gold text-black shadow-gold-sm hover:scale-105"
-              }`}
-            >
-              Signup
-            </Link>
+            {currentUser ? (
+              <Link
+                href="/order"
+                className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  pathname === "/order"
+                    ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
+                    : "btn-gold text-black shadow-gold-sm hover:scale-105"
+                }`}
+              >
+                Order
+              </Link>
+            ) : (
+              <Link
+                href="/signup"
+                className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  pathname === "/signup"
+                    ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
+                    : "btn-gold text-black shadow-gold-sm hover:scale-105"
+                }`}
+              >
+                Signup
+              </Link>
+            )}
           </div>
         </div>
       </nav>

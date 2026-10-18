@@ -66,6 +66,29 @@ public class UserService {
         );
     }
 
+    public AuthResponse authenticateAdmin(AuthRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid admin credentials."));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Invalid admin credentials.");
+        }
+
+        if (!"ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access Denied: This account does not possess administrator privileges.");
+        }
+
+        return new AuthResponse(
+            "Admin login successful",
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getPhone(),
+            user.getRole(),
+            "celoura-admin-token-" + user.getId()
+        );
+    }
+
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
