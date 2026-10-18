@@ -56,14 +56,35 @@ public class AuthController {
 
     @GetMapping("/user")
     public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
+        return getProfile(email);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@RequestParam String email) {
         return userService.findByEmail(email)
             .map(user -> ResponseEntity.ok(Map.of(
                 "id", user.getId(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "phone", user.getPhone(),
-                "role", user.getRole()
+                "role", user.getRole(),
+                "address", user.getAddress() != null ? user.getAddress() : "",
+                "createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : ""
             )))
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestParam String email, @RequestBody com.celoura.dto.ProfileUpdateRequest request) {
+        User updated = userService.updateProfile(email, request);
+        return ResponseEntity.ok(Map.of(
+            "message", "Profile updated successfully",
+            "id", updated.getId(),
+            "name", updated.getName(),
+            "email", updated.getEmail(),
+            "phone", updated.getPhone(),
+            "role", updated.getRole(),
+            "address", updated.getAddress() != null ? updated.getAddress() : ""
+        ));
     }
 }

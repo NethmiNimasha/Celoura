@@ -185,7 +185,7 @@ export const INITIAL_DESIGNS = [
     customizable: true,
   },
   {
-    id: "CEL-DSG-03",
+    id: "CEL-DSG-04",
     title: "Auric Royale Ivory Gown Lehenga",
     category: "Bridal Lehengas",
     price: 30000,

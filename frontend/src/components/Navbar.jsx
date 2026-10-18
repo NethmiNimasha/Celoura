@@ -10,6 +10,7 @@ import {
   Clock, 
   ShieldCheck, 
   Crown,
+  User
 } from "lucide-react";
 import { BUSINESS_INFO } from "../lib/celouraData";
 import { getStoredUser } from "../lib/api";
@@ -131,16 +132,31 @@ export default function Navbar() {
             </Link>
 
             {currentUser ? (
-              <Link
-                href="/order"
-                className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                  pathname === "/order"
-                    ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
-                    : "btn-gold text-black shadow-gold-sm hover:scale-105"
-                }`}
-              >
-                Order
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/order"
+                  className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                    pathname === "/order"
+                      ? "bg-amber-400 text-black shadow-gold-md ring-2 ring-amber-300"
+                      : "btn-gold text-black shadow-gold-sm hover:scale-105"
+                  }`}
+                >
+                  Order
+                </Link>
+
+                <Link
+                  href="/profile"
+                  className={`flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all duration-300 ${
+                    pathname === "/profile"
+                      ? "border border-amber-400 bg-amber-400/20 text-amber-300 shadow-gold-sm ring-1 ring-amber-300/50"
+                      : "border border-amber-500/30 bg-zinc-900/80 text-zinc-300 hover:text-white hover:border-amber-400/60"
+                  }`}
+                >
+                  <User className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">{currentUser.name ? currentUser.name.split(" ")[0] : "Profile"}</span>
+                  <span className="sm:hidden">Profile</span>
+                </Link>
+              </div>
             ) : (
               <Link
                 href="/signup"

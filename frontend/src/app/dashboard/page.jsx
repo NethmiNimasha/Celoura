@@ -182,6 +182,14 @@ export default function CustomerDashboard() {
             )}
 
             <Link
+              href="/profile"
+              className="btn-gold-outline rounded-full px-5 py-2.5 text-xs font-semibold text-zinc-300 flex items-center gap-1.5 hover:text-white hover:border-amber-400 transition"
+            >
+              <User className="h-3.5 w-3.5 text-amber-400" />
+              <span>Customer Profile</span>
+            </Link>
+
+            <Link
               href="/order"
               className="btn-gold rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-black flex items-center gap-1.5 shadow-gold-sm hover:scale-105 transition-all"
             >
