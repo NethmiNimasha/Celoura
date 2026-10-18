@@ -457,6 +457,33 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Custom Design Image Reference if attached */}
+            {(selectedOrderDetails.designImage || selectedOrderDetails.customReferenceImage) && (
+              <div className="rounded-2xl border border-amber-500/30 bg-zinc-950 p-4 mb-6">
+                <span className="font-bold text-amber-300 block mb-2 text-xs uppercase tracking-wider">
+                  Attached Design Reference Photo
+                </span>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="relative aspect-[4/3] w-48 shrink-0 rounded-xl overflow-hidden border border-amber-400/50 shadow-gold-sm bg-black">
+                    <img
+                      src={selectedOrderDetails.customReferenceImage || selectedOrderDetails.designImage}
+                      alt="Custom Design Reference"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="text-xs text-zinc-300 space-y-1">
+                    <p><strong className="text-white">Design Style:</strong> {selectedOrderDetails.designTitle}</p>
+                    {selectedOrderDetails.customDesignNotes && (
+                      <p><strong className="text-white">Client Notes:</strong> {selectedOrderDetails.customDesignNotes}</p>
+                    )}
+                    <span className="inline-block text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-500/30 mt-1">
+                      {selectedOrderDetails.isCustomDesign ? "Custom Client Upload" : "Catalogue Foundation"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Measurements Section */}
             {selectedOrderDetails.measurements && (
               <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 mb-6">

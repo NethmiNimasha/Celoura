@@ -248,6 +248,27 @@ function TrackContent() {
                 <h4 className="font-cinzel text-xs uppercase tracking-widest text-amber-300 font-bold">
                   Haute Garment Specifications
                 </h4>
+
+                {(selectedOrder.designImage || selectedOrder.customReferenceImage) && (
+                  <div className="rounded-2xl border border-amber-500/30 bg-zinc-950 p-3 flex items-center gap-3">
+                    <div className="relative h-16 w-20 shrink-0 rounded-xl overflow-hidden border border-amber-400/40 bg-black">
+                      <img
+                        src={selectedOrder.customReferenceImage || selectedOrder.designImage}
+                        alt="Design Reference"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-amber-400 block">
+                        {selectedOrder.isCustomDesign ? "Custom Client Design Attached" : "Signature Design"}
+                      </span>
+                      <strong className="text-xs text-white block">
+                        {selectedOrder.designTitle}
+                      </strong>
+                    </div>
+                  </div>
+                )}
+
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Design Model:</span>

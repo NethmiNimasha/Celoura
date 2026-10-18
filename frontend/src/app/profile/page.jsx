@@ -662,6 +662,21 @@ export default function CustomerProfilePage() {
                       {order.designTitle}
                     </h3>
 
+                    {(order.designImage || order.customReferenceImage) && (
+                      <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden mt-3 border border-amber-500/30 bg-black">
+                        <img
+                          src={order.customReferenceImage || order.designImage}
+                          alt={order.designTitle}
+                          className="h-full w-full object-cover"
+                        />
+                        {order.isCustomDesign && (
+                          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-amber-400 text-black px-2 py-0.5 text-[9.5px] font-bold shadow-md">
+                            Custom Commission
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-400">
                       <p>Colour: <strong className="text-zinc-200">{order.colour}</strong></p>
                       <p>Fabric: <strong className="text-zinc-200">{order.fabric}</strong></p>

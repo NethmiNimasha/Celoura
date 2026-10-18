@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,7 +22,10 @@ import {
   Info,
   UploadCloud,
   FileCheck,
-  Loader2
+  Loader2,
+  Camera,
+  Trash2,
+  ImageIcon
 } from "lucide-react";
 import { 
   INITIAL_DESIGNS, 
@@ -95,8 +98,15 @@ function OrderFormContent() {
 
   // Form State
   const [garmentType, setGarmentType] = useState("Frocks & Gowns");
+  const [designSelectionMode, setDesignSelectionMode] = useState("catalogue"); // "catalogue" | "custom"
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [customDesignTitle, setCustomDesignTitle] = useState("");
+  const [customDesignImage, setCustomDesignImage] = useState(null); // Data URL Base64 preview
+  const [customDesignImageName, setCustomDesignImageName] = useState("");
+  const [customDesignNotes, setCustomDesignNotes] = useState("");
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [silhouette, setSilhouette] = useState(SILHOUETTES[0]);
   const [neckline, setNeckline] = useState(NECKLINES[0]);
   const [sleeve, setSleeve] = useState(SLEEVE_STYLES[0]);
@@ -130,6 +140,77 @@ function OrderFormContent() {
 
   // Errors state
   const [errors, setErrors] = useState({});
+
+  const getGarmentBasePrice = (category) => {
+    switch (category) {
+      case "Frocks & Gowns": return 28000;
+      case "Saree Blouses": return 16500;
+      case "Designer Skirts": return 24500;
+      case "Couture Blouses": return 18500;
+      case "Bridal Lehengas": return 95000;
+      default: return 25000;
+    }
+  };
+
+  const handleImageFile = (file) => {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, customImage: "Please choose an image file (PNG, JPG, WEBP, or HEIC)." }));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, customImage: "Image file must be under 10MB." }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      setCustomDesignImage(dataUrl);
+      setCustomDesignImageName(file.name);
+      setReferenceFile(file.name);
+      setDesignSelectionMode("custom");
+
+      const title = customDesignTitle.trim() || `Custom ${garmentType} (From Inspiration Photo)`;
+      setCustomDesignTitle(title);
+      setSelectedDesign({
+        id: "CEL-CUSTOM-UPLOAD",
+        title: title,
+        category: garmentType,
+        price: getGarmentBasePrice(garmentType),
+        priceFormatted: `LKR ${getGarmentBasePrice(garmentType).toLocaleString()} (Base)`,
+        image: dataUrl,
+        isCustomUpload: true,
+      });
+
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.design;
+        delete copy.customImage;
+        return copy;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearCustomImage = () => {
+    setCustomDesignImage(null);
+    setCustomDesignImageName("");
+    setReferenceFile(null);
+    if (selectedDesign?.isCustomUpload) {
+      const matching = INITIAL_DESIGNS.find((d) => d.category === garmentType);
+      if (matching) {
+        setSelectedDesign(matching);
+        setCustomDesignTitle(matching.title);
+      } else {
+        setSelectedDesign(null);
+        setCustomDesignTitle("");
+      }
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     const user = getStoredUser();
@@ -187,15 +268,17 @@ function OrderFormContent() {
   };
 
   // Base price calculation
-  const basePrice = selectedDesign ? selectedDesign.price : 145000;
+  const basePrice = selectedDesign && !selectedDesign.isCustomUpload 
+    ? selectedDesign.price 
+    : getGarmentBasePrice(garmentType);
   const fabricMod = FABRIC_OPTIONS.find((f) => f.name === selectedFabric)?.priceMod || 0;
   const estimatedTotal = basePrice + fabricMod;
 
   const validateStep = (currentStep) => {
     const errs = {};
     if (currentStep === 1) {
-      if (!selectedDesign && !customDesignTitle.trim()) {
-        errs.design = "Please select a design foundation or name your custom style.";
+      if (!selectedDesign && !customDesignTitle.trim() && !customDesignImage) {
+        errs.design = "Please select a design foundation, upload your custom image, or enter a custom style name.";
       }
     } else if (currentStep === 3) {
       if (!measurements.bust) errs.bust = "Bust measurement required";
@@ -236,13 +319,21 @@ function OrderFormContent() {
     if (!validateStep(4)) return;
 
     const newOrderId = `CEL-${Math.floor(1000 + Math.random() * 9000)}`;
+    const finalDesignTitle = selectedDesign 
+      ? selectedDesign.title 
+      : (customDesignTitle.trim() || `Custom Bespoke ${garmentType}`);
+
     const newOrder = {
       id: newOrderId,
       customerName,
       customerPhone,
       customerEmail,
-      designTitle: selectedDesign ? selectedDesign.title : customDesignTitle,
-      designId: selectedDesign ? selectedDesign.id : "CEL-CUSTOM",
+      designTitle: finalDesignTitle,
+      designId: selectedDesign?.isCustomUpload ? "CEL-CUSTOM-UPLOAD" : (selectedDesign ? selectedDesign.id : "CEL-CUSTOM"),
+      designImage: customDesignImage || selectedDesign?.image || "/images/hero-model.jpg",
+      customReferenceImage: customDesignImage || null,
+      isCustomDesign: Boolean(customDesignImage || selectedDesign?.isCustomUpload || !selectedDesign),
+      customDesignNotes: customDesignNotes || specialNotes,
       colour: selectedColor,
       fabric: selectedFabric,
       silhouette,
@@ -317,6 +408,21 @@ function OrderFormContent() {
               </div>
             </div>
           </div>
+
+          {/* Design Reference Visual in Confirmation */}
+          {submittedOrder.designImage && (
+            <div className="my-5 mx-auto max-w-xs rounded-2xl overflow-hidden border border-amber-400/50 bg-black p-2.5 shadow-gold-md">
+              <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden">
+                <img src={submittedOrder.designImage} alt="Order Design Preview" className="h-full w-full object-cover" />
+              </div>
+              <p className="text-xs font-bold text-amber-300 mt-2 truncate">
+                {submittedOrder.designTitle}
+              </p>
+              <span className="text-[10px] text-zinc-400 font-medium">
+                {submittedOrder.isCustomDesign ? "Custom Uploaded Commission" : "Catalogue Selection"}
+              </span>
+            </div>
+          )}
 
           <p className="mt-6 text-xs text-zinc-400 max-w-lg mx-auto leading-relaxed">
             Our Akuressa master tailor has received your specifications. We will review your measurements and reach out via phone or WhatsApp at <strong className="text-zinc-200">{submittedOrder.customerPhone}</strong> to confirm fitting arrangements.
@@ -465,19 +571,55 @@ function OrderFormContent() {
               </div>
             </div>
 
-            {/* Design Selector */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                  2. Choose Foundation Design ({garmentType})
-                </label>
-                <span className="text-[11px] text-zinc-400">
-                  Click to select design inspiration
-                </span>
+            {/* Design Selector & Custom Upload Studio */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                    2. Choose Foundation Design ({garmentType})
+                  </label>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Select a signature design or customize your own with a photo reference.
+                  </p>
+                </div>
+
+                {/* Option Toggle */}
+                <div className="inline-flex rounded-full border border-amber-500/30 bg-zinc-950 p-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setDesignSelectionMode("catalogue")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      designSelectionMode === "catalogue" && !customDesignImage
+                        ? "bg-amber-400 text-black shadow-gold-sm font-bold"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    Catalogue Designs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDesignSelectionMode("custom");
+                      if (!customDesignImage) {
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      designSelectionMode === "custom" || customDesignImage
+                        ? "bg-amber-400 text-black shadow-gold-sm font-bold"
+                        : "text-amber-300/80 hover:text-amber-200"
+                    }`}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Upload Custom Design</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Design Cards Grid: Catalogue items + Custom Upload Card */}
               <div className="grid sm:grid-cols-3 gap-4">
                 {INITIAL_DESIGNS.filter((d) => d.category === garmentType).map((d) => {
-                  const isSelected = selectedDesign?.id === d.id;
+                  const isSelected = selectedDesign?.id === d.id && !customDesignImage;
                   return (
                     <div
                       key={d.id}
@@ -485,10 +627,11 @@ function OrderFormContent() {
                         setSelectedDesign(d);
                         setCustomDesignTitle(d.title);
                         if (d.silhouette) setSilhouette(d.silhouette);
+                        setDesignSelectionMode("catalogue");
                       }}
                       className={`cursor-pointer rounded-2xl border p-3 transition-all ${
                         isSelected
-                          ? "border-amber-400 bg-amber-400/10 shadow-gold-sm"
+                          ? "border-amber-400 bg-amber-400/10 shadow-gold-sm ring-1 ring-amber-400/50"
                           : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-600"
                       }`}
                     >
@@ -500,33 +643,233 @@ function OrderFormContent() {
                     </div>
                   );
                 })}
+
+                {/* Card: Custom Commission / Upload Image Card */}
+                <div
+                  onClick={() => {
+                    setDesignSelectionMode("custom");
+                    fileInputRef.current?.click();
+                  }}
+                  className={`cursor-pointer rounded-2xl border-2 border-dashed p-3.5 flex flex-col items-center justify-center text-center transition-all group min-h-[170px] ${
+                    customDesignImage || selectedDesign?.isCustomUpload
+                      ? "border-amber-400 bg-amber-400/10 shadow-gold-sm ring-1 ring-amber-400/50"
+                      : "border-amber-500/40 bg-zinc-950/70 hover:border-amber-400 hover:bg-amber-500/5"
+                  }`}
+                >
+                  {customDesignImage ? (
+                    <div className="w-full flex flex-col items-center">
+                      <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden mb-2 border border-amber-400/50">
+                        <img src={customDesignImage} alt="Custom uploaded design" className="h-full w-full object-cover" />
+                        <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-400 text-black px-1.5 py-0.5 text-[9.5px] font-bold shadow-md">
+                          ✓ Custom Photo
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-amber-300 truncate w-full">
+                        {customDesignTitle || "Custom Design Commission"}
+                      </p>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">Click to change picture</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-2 px-1">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400/10 text-amber-400 group-hover:bg-amber-400 group-hover:text-black transition-all mb-2 shadow-gold-sm">
+                        <UploadCloud className="h-5 w-5" />
+                      </div>
+                      <span className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                        + Upload Custom Design
+                      </span>
+                      <span className="text-[10px] text-zinc-400 mt-1 max-w-[170px] leading-tight">
+                        Upload your photo, sketch, or Pinterest reference
+                      </span>
+                      <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 group-hover:underline">
+                        <span>Select Image</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Or Custom Title */}
-              <div className="pt-2">
-                <label className="text-xs text-zinc-400 block mb-1">
-                  Or give your custom design a unique title / reference name:
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Custom Bridal Velvet Lehenga with Peacock Motifs"
-                  value={customDesignTitle}
-                  onChange={(e) => {
-                    setCustomDesignTitle(e.target.value);
-                    if (selectedDesign && selectedDesign.title !== e.target.value) {
-                      setSelectedDesign(null);
-                    }
-                  }}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900/90 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
-                />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*,.pdf"
+                onChange={(e) => handleImageFile(e.target.files?.[0])}
+                className="hidden"
+              />
+
+              {/* Dedicated Custom Design Upload & Config Box */}
+              <div className="mt-4 rounded-2xl border border-amber-500/30 bg-black/60 p-4 sm:p-5 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400/20 text-amber-400">
+                      <Camera className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                      Customize Your Own Design (Upload Photo / Sketch)
+                    </span>
+                  </div>
+                  {customDesignImage && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Reference Attached
+                    </span>
+                  )}
+                </div>
+
+                {!customDesignImage ? (
+                  /* DROPZONE */
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragOver(false);
+                      handleImageFile(e.dataTransfer.files?.[0]);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-all ${
+                      isDragOver
+                        ? "border-amber-400 bg-amber-400/15 shadow-gold-md scale-[1.01]"
+                        : "border-zinc-700 bg-zinc-950/70 hover:border-amber-400/70 hover:bg-zinc-900"
+                    }`}
+                  >
+                    <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-amber-400/10 text-amber-400 mb-2.5">
+                      <UploadCloud className="h-6 w-6" />
+                    </div>
+                    <p className="text-xs font-bold text-white">
+                      Drop your outfit photo here, or <span className="text-amber-400 underline font-semibold">browse files</span>
+                    </p>
+                    <p className="text-[11px] text-zinc-400 mt-1 max-w-sm mx-auto">
+                      Upload from phone or computer: PNG, JPG, WEBP, or HEIC (up to 10MB)
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      className="mt-3 btn-gold rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider text-black inline-flex items-center gap-1.5 shadow-gold-sm cursor-pointer"
+                    >
+                      <Camera className="h-3.5 w-3.5" />
+                      <span>Choose Dress Photo</span>
+                    </button>
+                  </div>
+                ) : (
+                  /* PREVIEW OF UPLOADED CUSTOM DESIGN */
+                  <div className="rounded-2xl border border-amber-400/40 bg-zinc-950/90 p-3.5 sm:p-4">
+                    <div className="grid sm:grid-cols-12 gap-4 items-center">
+                      <div className="sm:col-span-4 relative aspect-[4/3] w-full rounded-xl overflow-hidden border border-amber-400/50 bg-black shadow-gold-sm">
+                        <img
+                          src={customDesignImage}
+                          alt="Custom dress reference"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
+                          <span className="text-[10px] font-semibold text-zinc-300 truncate">
+                            {customDesignImageName}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="sm:col-span-8 space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+                          <div>
+                            <span className="text-xs font-bold text-amber-300">Custom Reference Attached</span>
+                            <p className="text-[10px] text-zinc-400">Our tailors will replicate this dress</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-[11px] font-semibold text-amber-300 hover:text-white px-2.5 py-1 rounded-lg border border-amber-500/30 bg-zinc-900 cursor-pointer"
+                            >
+                              Change
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleClearCustomImage}
+                              className="text-[11px] font-semibold text-red-400 hover:text-red-300 px-2 py-1 rounded-lg border border-red-500/30 bg-red-500/10 cursor-pointer"
+                              title="Remove custom image"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] text-zinc-300 font-medium block mb-1">
+                            Name Your Custom Design *
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Victorian Corset Evening Gown in Wine Velvet"
+                            value={customDesignTitle}
+                            onChange={(e) => {
+                              setCustomDesignTitle(e.target.value);
+                              if (selectedDesign?.isCustomUpload) {
+                                setSelectedDesign((prev) => ({ ...prev, title: e.target.value }));
+                              }
+                            }}
+                            className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] text-zinc-300 font-medium block mb-1">
+                            Specific Details From Photo (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Copy neckline from photo, but make sleeves 3/4 length"
+                            value={customDesignNotes}
+                            onChange={(e) => setCustomDesignNotes(e.target.value)}
+                            className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Custom title input if user prefers entering title without image */}
+                {!customDesignImage && (
+                  <div>
+                    <label className="text-xs text-zinc-400 block mb-1">
+                      Or give your custom design a unique title / reference name:
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="e.g. Custom Bridal Velvet Lehenga with Peacock Motifs"
+                        value={customDesignTitle}
+                        onChange={(e) => {
+                          setCustomDesignTitle(e.target.value);
+                          if (selectedDesign && selectedDesign.title !== e.target.value && !selectedDesign.isCustomUpload) {
+                            setSelectedDesign(null);
+                          }
+                        }}
+                        className="w-full rounded-xl border border-zinc-700 bg-zinc-900/90 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="shrink-0 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors flex items-center gap-1.5 cursor-pointer"
+                        title="Upload reference photo"
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Attach Photo</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {errors.design && <p className="text-xs text-red-400 mt-1">{errors.design}</p>}
+                {errors.customImage && <p className="text-xs text-red-400 mt-1">{errors.customImage}</p>}
               </div>
             </div>
 
             {/* Silhouette Architecture */}
             <div className="space-y-3">
               <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                Lehenga Silhouette Architecture
+                {garmentType === "Frocks & Gowns" ? "Frock & Gown Silhouette Architecture" : garmentType === "Saree Blouses" ? "Saree Blouse Silhouette Architecture" : garmentType === "Designer Skirts" ? "Skirt Silhouette Architecture" : garmentType === "Couture Blouses" ? "Blouse Silhouette Architecture" : "Lehenga Silhouette Architecture"}
               </label>
               <div className="grid sm:grid-cols-2 gap-3">
                 {SILHOUETTES.map((s) => (
@@ -962,8 +1305,30 @@ function OrderFormContent() {
                 </span>
               </h3>
 
+              {customDesignImage && (
+                <div className="flex items-center gap-3.5 rounded-xl border border-amber-500/30 bg-black/60 p-3">
+                  <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden border border-amber-400/50 shadow-gold-sm">
+                    <img src={customDesignImage} alt="Custom Reference" className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 block">
+                      Custom Commission Reference Attached
+                    </span>
+                    <strong className="text-xs font-bold text-white block truncate">
+                      {selectedDesign ? selectedDesign.title : (customDesignTitle || "Custom Bespoke Commission")}
+                    </strong>
+                    {customDesignNotes && (
+                      <p className="text-[11px] text-zinc-400 mt-0.5 line-clamp-1 italic">
+                        "{customDesignNotes}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid sm:grid-cols-2 gap-3 text-xs text-zinc-300 border-t border-zinc-800 pt-3">
-                <p><strong className="text-zinc-500">Design:</strong> {selectedDesign ? selectedDesign.title : customDesignTitle || "Bespoke Lehenga"}</p>
+                <p><strong className="text-zinc-500">Design:</strong> {selectedDesign ? selectedDesign.title : customDesignTitle || "Bespoke Dress"}</p>
+                <p><strong className="text-zinc-500">Category:</strong> {garmentType}</p>
                 <p><strong className="text-zinc-500">Silhouette:</strong> {silhouette}</p>
                 <p><strong className="text-zinc-500">Colour:</strong> {selectedColor}</p>
                 <p><strong className="text-zinc-500">Fabric:</strong> {selectedFabric}</p>
