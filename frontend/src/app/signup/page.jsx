@@ -23,7 +23,10 @@ import { registerUser, loginUser, loginAdmin } from "../../lib/api";
 function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialMode = searchParams.get("mode") === "signin" ? "signin" : "signup";
+  const redirectUrl = searchParams.get("redirect");
+  const isOrderRedirect = Boolean(redirectUrl && redirectUrl.includes("/order"));
+  // When coming from starting an order, show signin first unless user explicitly requested signup mode
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : (searchParams.get("mode") === "signin" || isOrderRedirect) ? "signin" : "signup";
   const initialRole = searchParams.get("role") === "admin" ? "admin" : "client";
 
   const [mode, setMode] = useState(initialMode); // 'signup' or 'signin'
@@ -44,7 +47,7 @@ function SignUpContent() {
   const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
-    if (searchParams.get("mode") === "signin") {
+    if (searchParams.get("mode") === "signin" || isOrderRedirect) {
       setMode("signin");
     } else if (searchParams.get("mode") === "signup") {
       setMode("signup");
@@ -55,7 +58,7 @@ function SignUpContent() {
       setSigninRole("admin");
       setSigninEmail("admin@celourafashion.com");
     }
-  }, [searchParams]);
+  }, [searchParams, isOrderRedirect]);
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
@@ -80,12 +83,12 @@ function SignUpContent() {
         password: signupPassword,
       });
 
-      setSuccessMsg("Account created successfully! Redirecting to custom dress order...");
+      setSuccessMsg(isOrderRedirect ? "Account created! Taking you to custom dress order..." : "Account created successfully! Redirecting...");
       setTimeout(() => {
         if (data.role === "ROLE_ADMIN" || signupEmail.toLowerCase().includes("admin")) {
           router.push("/admin");
         } else {
-          router.push("/order");
+          router.push(redirectUrl || "/order");
         }
       }, 700);
     } catch (err) {
@@ -123,12 +126,12 @@ function SignUpContent() {
           password: signinPassword,
         });
 
-        setSuccessMsg("Welcome back! Redirecting...");
+        setSuccessMsg(isOrderRedirect ? "Signed in! Opening custom dress order..." : "Welcome back! Redirecting...");
         setTimeout(() => {
           if (data.role === "ROLE_ADMIN" || signinEmail.toLowerCase().includes("admin")) {
             router.push("/admin");
           } else {
-            router.push("/dashboard");
+            router.push(redirectUrl || "/order");
           }
         }, 600);
       }
@@ -182,6 +185,25 @@ function SignUpContent() {
               : "Access your custom orders, status tracker, and saved measurements."}
           </p>
         </div>
+
+        {/* Notice when arriving from "Start Order" */}
+        {isOrderRedirect && (
+          <div className="mb-6 rounded-2xl border border-amber-400/50 bg-amber-400/10 p-4 text-xs text-amber-200 shadow-gold-sm animate-fade-in">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-400 text-black font-bold">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="font-cinzel text-sm font-bold text-amber-300">
+                  Sign In Or Register To Start Your Order
+                </h3>
+                <p className="mt-0.5 text-zinc-300 leading-relaxed">
+                  Please sign in to your Atelier client account first. Your custom dress specifications and measurements will be safely linked to your personal profile.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* SIGN IN VIEW - Matching exactly the screenshot */}
         {mode === "signin" && (

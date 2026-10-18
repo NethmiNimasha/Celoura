@@ -22,6 +22,8 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("role") === "admin" ? "admin" : "client";
+  const redirectUrl = searchParams.get("redirect");
+  const isOrderRedirect = Boolean(redirectUrl && redirectUrl.includes("/order"));
 
   const [activeTab, setActiveTab] = useState(initialTab); // "client" | "admin"
   const [email, setEmail] = useState("");
@@ -58,12 +60,12 @@ function SignInContent() {
       } else {
         // Client authentication (also routes admin to /admin if admin logs in here)
         const data = await loginUser({ email, password });
-        setSuccessMsg("Welcome back! Redirecting...");
+        setSuccessMsg(isOrderRedirect ? "Signed in! Opening your custom order studio..." : "Welcome back! Redirecting...");
         setTimeout(() => {
           if (data.role === "ROLE_ADMIN" || email.toLowerCase().includes("admin")) {
             router.push("/admin");
           } else {
-            router.push("/dashboard");
+            router.push(redirectUrl || "/order");
           }
         }, 600);
       }
@@ -111,6 +113,25 @@ function SignInContent() {
               : "Access your custom orders, status tracker, and saved measurements."}
           </p>
         </div>
+
+        {/* Notice when arriving from "Start Order" */}
+        {isOrderRedirect && (
+          <div className="mb-6 rounded-2xl border border-amber-400/50 bg-amber-400/10 p-4 text-xs text-amber-200 shadow-gold-sm animate-fade-in">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-400 text-black font-bold">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="font-cinzel text-sm font-bold text-amber-300">
+                  Sign In To Start Your Custom Order
+                </h3>
+                <p className="mt-0.5 text-zinc-300 leading-relaxed">
+                  Please sign in to your Atelier account first. Your custom dress specifications and measurements will be safely linked to your personal profile.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Role Toggle: Client Sign In vs Admin Sign In */}
         <div className="mb-6 grid grid-cols-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
@@ -238,7 +259,10 @@ function SignInContent() {
             <div className="space-y-2">
               <p>
                 Don't have an account yet?{" "}
-                <Link href="/signup" className="text-amber-400 font-semibold hover:underline">
+                <Link
+                  href={redirectUrl ? `/signup?redirect=${encodeURIComponent(redirectUrl)}` : "/signup"}
+                  className="text-amber-400 font-semibold hover:underline"
+                >
                   Register here
                 </Link>
               </p>

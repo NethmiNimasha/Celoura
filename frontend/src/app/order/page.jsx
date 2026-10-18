@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Scissors, 
   Sparkles, 
@@ -21,7 +21,8 @@ import {
   MapPin, 
   Info,
   UploadCloud,
-  FileCheck
+  FileCheck,
+  Loader2
 } from "lucide-react";
 import { 
   INITIAL_DESIGNS, 
@@ -84,8 +85,10 @@ const STANDARD_SIZES = {
 };
 
 function OrderFormContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedDesignId = searchParams.get("design");
+  const [authChecked, setAuthChecked] = useState(false);
 
   const [step, setStep] = useState(1);
   const [submittedOrder, setSubmittedOrder] = useState(null);
@@ -130,20 +133,26 @@ function OrderFormContent() {
 
   useEffect(() => {
     const user = getStoredUser();
-    if (user) {
-      if (user.name) setCustomerName(user.name);
-      if (user.phone) setCustomerPhone(user.phone);
-      if (user.email) setCustomerEmail(user.email);
+    if (!user) {
+      // Unauthenticated visitor trying to start order: show sign in first!
+      const currentQuery = preselectedDesignId ? `?design=${preselectedDesignId}` : "";
+      router.push(`/signin?redirect=${encodeURIComponent(`/order${currentQuery}`)}`);
+      return;
+    }
+    setAuthChecked(true);
 
-      const userMeasKey = `celoura_measurements_${user.email}`;
-      const savedM = typeof window !== "undefined" ? localStorage.getItem(userMeasKey) : null;
-      if (savedM) {
-        try {
-          const parsed = JSON.parse(savedM);
-          setMeasurements((prev) => ({ ...prev, ...parsed }));
-        } catch (e) {
-          console.error(e);
-        }
+    if (user.name) setCustomerName(user.name);
+    if (user.phone) setCustomerPhone(user.phone);
+    if (user.email) setCustomerEmail(user.email);
+
+    const userMeasKey = `celoura_measurements_${user.email}`;
+    const savedM = typeof window !== "undefined" ? localStorage.getItem(userMeasKey) : null;
+    if (savedM) {
+      try {
+        const parsed = JSON.parse(savedM);
+        setMeasurements((prev) => ({ ...prev, ...parsed }));
+      } catch (e) {
+        console.error(e);
       }
     }
 
@@ -332,6 +341,17 @@ function OrderFormContent() {
             </a>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
+        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+        <p className="font-cinzel text-xs uppercase tracking-widest text-amber-300">
+          Connecting to your Atelier Client Account...
+        </p>
       </div>
     );
   }
