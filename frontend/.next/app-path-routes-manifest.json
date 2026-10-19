@@ -7,6 +7,7 @@
   "/dashboard/page": "/dashboard",
   "/order/page": "/order",
   "/page": "/",
+  "/profile/page": "/profile",
   "/signin/page": "/signin",
   "/signup/page": "/signup",
   "/track/page": "/track"
