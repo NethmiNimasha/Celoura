@@ -138,8 +138,6 @@ export default function CustomerProfilePage() {
       const oNameNorm = (o.customerName || "").toLowerCase().trim();
 
       if (userEmailNorm && oEmailNorm === userEmailNorm) return true;
-      if (userEmailNorm.includes("ayesha") && oEmailNorm.includes("ayesha")) return true;
-      if (userEmailNorm.includes("ayyesha") && oEmailNorm.includes("ayesha")) return true;
       if (user.phone && o.customerPhone && user.phone.replace(/\D/g, "") === o.customerPhone.replace(/\D/g, "")) return true;
       if (userNameNorm && oNameNorm === userNameNorm) return true;
       return false;

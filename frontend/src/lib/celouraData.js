@@ -271,140 +271,7 @@ export const INITIAL_DESIGNS = [
   },
 ];
 
-export const INITIAL_ORDERS = [
-  {
-    id: "CEL-8291",
-    customerName: "Ayesha Jayawardena",
-    customerPhone: "0771234567",
-    customerEmail: "ayesha.j@example.com",
-    designTitle: "The Royal Empress Bridal Lehenga",
-    designId: "CEL-DSG-01",
-    colour: "Obsidian Black & Imperial Gold",
-    fabric: "Raw Silk & Zari Mesh",
-    silhouette: "Circular Flared (6-Meter Gher)",
-    neckline: "Sweetheart Neck",
-    sleeve: "Full Sleeve with Zari Cuff",
-    status: "In Progress",
-    totalAmount: 185000,
-    depositPaid: 92500,
-    eventDate: "2026-11-20",
-    orderDate: "2026-10-12",
-    estimatedCompletion: "2026-11-10",
-    measurements: {
-      bust: "36",
-      waist: "29",
-      hip: "39",
-      shoulder: "14.5",
-      armhole: "16",
-      sleeveLength: "21",
-      blouseLength: "14.5",
-      lehengaWaist: "30",
-      lehengaLength: "42",
-      unit: "inches",
-    },
-    notes: "Please add extra 2-inch interior seam margins for final fitting. Extra gold latkans on dupatta.",
-    assignedArtisan: "Master Tailor Sugath (Akuressa Workshop)",
-  },
-  {
-    id: "CEL-8292",
-    customerName: "Rashmi Fernando",
-    customerPhone: "0719876543",
-    customerEmail: "rashmi.f@example.com",
-    designTitle: "Maharani Velvet Couture Lehenga",
-    designId: "CEL-DSG-02",
-    colour: "Deep Black Velvet & Muted Gold",
-    fabric: "Italian Micro Velvet",
-    silhouette: "Heavy A-Line Flare with Triple Can-Can",
-    neckline: "Scoop Sweetheart",
-    sleeve: "Half Sleeve",
-    status: "Ready",
-    totalAmount: 165000,
-    depositPaid: 165000,
-    eventDate: "2026-10-28",
-    orderDate: "2026-09-25",
-    estimatedCompletion: "2026-10-15",
-    measurements: {
-      bust: "34",
-      waist: "27",
-      hip: "37",
-      shoulder: "14",
-      armhole: "15",
-      sleeveLength: "11",
-      blouseLength: "14",
-      lehengaWaist: "28",
-      lehengaLength: "41",
-      unit: "inches",
-    },
-    notes: "Boutique fitting session scheduled for this Saturday at Akuressa.",
-    assignedArtisan: "Master Embroiderer Kamala",
-  },
-  {
-    id: "CEL-8293",
-    customerName: "Dilrukshi Perera",
-    customerPhone: "0765544332",
-    customerEmail: "dilrukshi.p@example.com",
-    designTitle: "Auric Royale Bridal Splendor",
-    designId: "CEL-DSG-03",
-    colour: "Champagne Gold & Warm Auric",
-    fabric: "Pure Tissue Silk & Metallic Georgette",
-    silhouette: "Flared Trail Skirt with Structured Waistband",
-    neckline: "Corset Choli",
-    sleeve: "Full Fitted Sheer",
-    status: "Confirmed",
-    totalAmount: 220000,
-    depositPaid: 100000,
-    eventDate: "2026-12-05",
-    orderDate: "2026-10-14",
-    estimatedCompletion: "2026-11-25",
-    measurements: {
-      bust: "38",
-      waist: "32",
-      hip: "42",
-      shoulder: "15",
-      armhole: "17",
-      sleeveLength: "22",
-      blouseLength: "15",
-      lehengaWaist: "33",
-      lehengaLength: "43",
-      unit: "inches",
-    },
-    notes: "Double dupatta preference with custom gold tassels. Second veil in sheer ivory.",
-    assignedArtisan: "Senior Couturier Bandara",
-  },
-  {
-    id: "CEL-8294",
-    customerName: "Nethmi Nimasha",
-    customerPhone: "0771699754",
-    customerEmail: "nethunanayakkara315@gmail.com",
-    designTitle: "Gilded Blossom Festive Ensemble",
-    designId: "CEL-DSG-06",
-    colour: "Rose-Gold Infused Champagne & Black",
-    fabric: "Banarasi Brocade & Lurex Jacquard",
-    silhouette: "Classic A-Line with Latkan Tassels",
-    neckline: "Sweetheart",
-    sleeve: "Elbow Length",
-    status: "Pending",
-    totalAmount: 95000,
-    depositPaid: 0,
-    eventDate: "2026-11-15",
-    orderDate: "2026-10-16",
-    estimatedCompletion: "2026-11-05",
-    measurements: {
-      bust: "35",
-      waist: "28",
-      hip: "38",
-      shoulder: "14",
-      armhole: "15.5",
-      sleeveLength: "11.5",
-      blouseLength: "14",
-      lehengaWaist: "29",
-      lehengaLength: "41.5",
-      unit: "inches",
-    },
-    notes: "Sweetheart neckline with sheer back details and antique gold hand tassels.",
-    assignedArtisan: "Awaiting assignment",
-  },
-];
+export const INITIAL_ORDERS = [];
 
 // Helper functions for persistent local state
 export function getSavedDesigns() {
@@ -427,14 +294,15 @@ export function saveDesigns(designs) {
 }
 
 export function getSavedOrders() {
-  if (typeof window === "undefined") return INITIAL_ORDERS;
+  if (typeof window === "undefined") return [];
   try {
     const data = localStorage.getItem("celoura_orders");
-    return data ? JSON.parse(data) : INITIAL_ORDERS;
+    return data ? JSON.parse(data) : [];
   } catch (e) {
-    return INITIAL_ORDERS;
+    return [];
   }
 }
+
 
 export function saveOrders(orders) {
   if (typeof window === "undefined") return;

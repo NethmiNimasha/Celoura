@@ -31,7 +31,7 @@ function TrackContent() {
   const searchParams = useSearchParams();
   const queryOrderId = searchParams.get("orderId");
 
-  const [searchInput, setSearchInput] = useState(queryOrderId || "CEL-8291");
+  const [searchInput, setSearchInput] = useState(queryOrderId || "");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
   const [notFound, setNotFound] = useState(false);
@@ -94,8 +94,9 @@ function TrackContent() {
     const list = getSavedOrders();
     setOrders(list);
 
-    const initialId = queryOrderId || "CEL-8291";
-    findOrder(initialId);
+    if (queryOrderId) {
+      findOrder(queryOrderId);
+    }
   }, [queryOrderId]);
 
   const handleSearch = (e) => {
@@ -125,7 +126,7 @@ function TrackContent() {
           Track Your Custom Dress Order
         </h1>
         <p className="mt-2 text-sm text-zinc-300">
-          Enter your Order ID (e.g. CEL-8291) or registered phone number to view tailoring progress and estimated completion.
+          Enter your Order ID (e.g. CEL-XXXX) or registered phone number to view tailoring progress and estimated completion.
         </p>
       </div>
 
@@ -136,7 +137,7 @@ function TrackContent() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <input
               type="text"
-              placeholder="Search by Order ID (e.g. CEL-8291) or Phone..."
+              placeholder="Search by Order ID (e.g. CEL-XXXX) or Phone..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full rounded-full border border-zinc-700 bg-zinc-900/90 pl-11 pr-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
@@ -149,28 +150,8 @@ function TrackContent() {
             <span>Track</span>
           </button>
         </form>
-
-        {/* Quick Test Demo Order Links */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-zinc-400">
-          <span>Demo Orders:</span>
-          {["CEL-8291", "CEL-8292", "CEL-8293", "CEL-8294"].map((id) => (
-            <button
-              key={id}
-              onClick={() => {
-                setSearchInput(id);
-                const found = getSavedOrders().find((o) => o.id === id);
-                if (found) {
-                  setSelectedOrder(found);
-                  setNotFound(false);
-                }
-              }}
-              className="rounded-lg border border-zinc-800 bg-zinc-900/80 px-2.5 py-1 text-[11px] text-amber-300 hover:border-amber-500/50"
-            >
-              {id}
-            </button>
-          ))}
-        </div>
       </div>
+
 
       {/* Results View */}
       {notFound && (

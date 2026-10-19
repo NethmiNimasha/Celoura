@@ -37,7 +37,6 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         initUsers();
         initDesigns();
-        initOrders();
     }
 
     private void initUsers() {
@@ -150,32 +149,5 @@ public class DataInitializer implements CommandLineRunner {
             designRepository.saveAll(designs);
         }
     }
-
-    private void initOrders() {
-        if (orderRepository.count() == 0) {
-            Order order1 = new Order();
-            order1.setId("CEL-8291");
-            order1.setCustomerName("Nethmi Nimasha");
-            order1.setCustomerPhone("0771699754");
-            order1.setCustomerEmail("nethunanayakkara315@gmail.com");
-            order1.setDesignId("CEL-DSG-07");
-            order1.setDesignTitle("Aurelia Gold Velvet Evening Frock");
-            order1.setGarmentCategory("Frocks & Gowns");
-            order1.setColour("Obsidian Black & 24K Gold");
-            order1.setFabric("Italian Micro-Velvet & Zari");
-            order1.setSilhouette("A-Line Flared Frock");
-            order1.setNeckline("Sweetheart Neck");
-            order1.setSleeve("Full Embellished Sleeve");
-            order1.setStatus("In Progress");
-            order1.setTotalAmount(new BigDecimal("28000"));
-            order1.setDepositPaid(new BigDecimal("15000"));
-            order1.setOrderDate(LocalDate.now().minusDays(5));
-            order1.setEventDate(LocalDate.now().plusDays(20));
-            order1.setEstimatedCompletion(LocalDate.now().plusDays(15));
-            order1.setAssignedArtisan("Master Tailor Sugath (Akuressa Workshop)");
-            order1.setNotes("Tailored fitting at Akuressa boutique.");
-            order1.setMeasurements(new Measurement("34", "26", "36", "14", "15", "22", "14.5", "28", "41", "inches"));
-            orderRepository.save(order1);
-        }
-    }
 }
+
