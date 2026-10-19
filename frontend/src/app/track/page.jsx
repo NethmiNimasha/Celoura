@@ -25,6 +25,7 @@ import {
   ORDER_STATUSES, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
+import { getOrderByIdApi, getAllOrdersApi } from "../../lib/api";
 
 function TrackContent() {
   const searchParams = useSearchParams();
@@ -34,44 +35,73 @@ function TrackContent() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
   const [notFound, setNotFound] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const findOrder = async (query) => {
+    if (!query) return;
+    const cleanQuery = query.trim();
+
+    // 1. Check local list first
+    const list = getSavedOrders();
+    const localFound = list.find(
+      (o) =>
+        o.id.toLowerCase() === cleanQuery.toLowerCase() ||
+        (o.customerPhone && o.customerPhone.includes(cleanQuery)) ||
+        (o.customerName && o.customerName.toLowerCase().includes(cleanQuery.toLowerCase()))
+    );
+
+    if (localFound) {
+      setSelectedOrder(localFound);
+      setNotFound(false);
+    }
+
+    // 2. Query Spring Boot backend
+    try {
+      setIsSearching(true);
+      // If looks like an order ID
+      if (cleanQuery.toUpperCase().startsWith("CEL-") || cleanQuery.length <= 10) {
+        const backendOrder = await getOrderByIdApi(cleanQuery);
+        if (backendOrder && backendOrder.id) {
+          setSelectedOrder(backendOrder);
+          setNotFound(false);
+          return;
+        }
+      }
+
+      // If it's a phone number or partial name, query with phone filter
+      const phoneOrders = await getAllOrdersApi({ phone: cleanQuery });
+      if (Array.isArray(phoneOrders) && phoneOrders.length > 0) {
+        setSelectedOrder(phoneOrders[0]);
+        setNotFound(false);
+        return;
+      }
+
+      if (!localFound) {
+        setSelectedOrder(null);
+        setNotFound(true);
+      }
+    } catch (err) {
+      if (!localFound) {
+        setSelectedOrder(null);
+        setNotFound(true);
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   useEffect(() => {
     const list = getSavedOrders();
     setOrders(list);
 
     const initialId = queryOrderId || "CEL-8291";
-    const found = list.find(
-      (o) =>
-        o.id.toLowerCase() === initialId.toLowerCase() ||
-        o.customerPhone.includes(initialId)
-    );
-    if (found) {
-      setSelectedOrder(found);
-      setNotFound(false);
-    } else {
-      setNotFound(true);
-    }
+    findOrder(initialId);
   }, [queryOrderId]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!searchInput.trim()) return;
-
-    const list = getSavedOrders();
-    const found = list.find(
-      (o) =>
-        o.id.toLowerCase() === searchInput.trim().toLowerCase() ||
-        o.customerPhone.includes(searchInput.trim()) ||
-        o.customerName.toLowerCase().includes(searchInput.trim().toLowerCase())
-    );
-
-    if (found) {
-      setSelectedOrder(found);
-      setNotFound(false);
-    } else {
-      setSelectedOrder(null);
-      setNotFound(true);
-    }
+    findOrder(searchInput.trim());
   };
 
   // Status mapping for the 5 linear progress steps (Cancelled is treated separately)

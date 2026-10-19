@@ -32,7 +32,7 @@ import {
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getStoredUser } from "../../lib/api";
+import { getStoredUser, createOrderApi } from "../../lib/api";
 
 const COLOR_PALETTES = [
   { name: "Obsidian Black", hex: "#0a0a0c", border: "#d4af37", text: "text-amber-300" },
@@ -95,6 +95,7 @@ function OrderFormContent() {
 
   const [step, setStep] = useState(1);
   const [submittedOrder, setSubmittedOrder] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
   const [garmentType, setGarmentType] = useState("Frocks & Gowns");
@@ -314,48 +315,64 @@ function OrderFormContent() {
     window.scrollTo({ top: 120, behavior: "smooth" });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(4)) return;
 
-    const newOrderId = `CEL-${Math.floor(1000 + Math.random() * 9000)}`;
-    const finalDesignTitle = selectedDesign 
-      ? selectedDesign.title 
-      : (customDesignTitle.trim() || `Custom Bespoke ${garmentType}`);
+    setIsSubmitting(true);
+    try {
+      const newOrderId = `CEL-${Math.floor(1000 + Math.random() * 9000)}`;
+      const finalDesignTitle = selectedDesign 
+        ? selectedDesign.title 
+        : (customDesignTitle.trim() || `Custom Bespoke ${garmentType}`);
 
-    const newOrder = {
-      id: newOrderId,
-      customerName,
-      customerPhone,
-      customerEmail,
-      designTitle: finalDesignTitle,
-      designId: selectedDesign?.isCustomUpload ? "CEL-CUSTOM-UPLOAD" : (selectedDesign ? selectedDesign.id : "CEL-CUSTOM"),
-      designImage: customDesignImage || selectedDesign?.image || "/images/hero-model.jpg",
-      customReferenceImage: customDesignImage || null,
-      isCustomDesign: Boolean(customDesignImage || selectedDesign?.isCustomUpload || !selectedDesign),
-      customDesignNotes: customDesignNotes || specialNotes,
-      colour: selectedColor,
-      fabric: selectedFabric,
-      silhouette,
-      neckline,
-      sleeve,
-      status: "Pending",
-      totalAmount: estimatedTotal,
-      depositPaid: 0,
-      eventDate,
-      orderDate: new Date().toISOString().split("T")[0],
-      estimatedCompletion: eventDate,
-      measurements: {
-        ...measurements,
-        unit: measurementUnit,
-      },
-      notes: specialNotes,
-      assignedArtisan: "Celoura Master Tailor (Awaiting review)",
-    };
+      let newOrder = {
+        id: newOrderId,
+        customerName,
+        customerPhone,
+        customerEmail,
+        designTitle: finalDesignTitle,
+        designId: selectedDesign?.isCustomUpload ? "CEL-CUSTOM-UPLOAD" : (selectedDesign ? selectedDesign.id : "CEL-CUSTOM"),
+        designImage: customDesignImage || selectedDesign?.image || "/images/hero-model.jpg",
+        customReferenceImage: customDesignImage || null,
+        isCustomDesign: Boolean(customDesignImage || selectedDesign?.isCustomUpload || !selectedDesign),
+        customDesignNotes: customDesignNotes || specialNotes,
+        colour: selectedColor,
+        fabric: selectedFabric,
+        silhouette,
+        neckline,
+        sleeve,
+        status: "Pending",
+        totalAmount: estimatedTotal,
+        depositPaid: 0,
+        eventDate,
+        orderDate: new Date().toISOString().split("T")[0],
+        estimatedCompletion: eventDate,
+        measurements: {
+          ...measurements,
+          unit: measurementUnit,
+        },
+        notes: specialNotes,
+        assignedArtisan: "Celoura Master Tailor (Awaiting review)",
+      };
 
-    addOrder(newOrder);
-    setSubmittedOrder(newOrder);
-    window.scrollTo({ top: 80, behavior: "smooth" });
+      // Persist to Spring Boot backend database
+      try {
+        const savedBackendOrder = await createOrderApi(newOrder);
+        if (savedBackendOrder && savedBackendOrder.id) {
+          newOrder = savedBackendOrder;
+        }
+      } catch (backendErr) {
+        console.warn("Backend order creation warning (fallback to local state):", backendErr);
+      }
+
+      // Synchronize in local storage & update UI
+      addOrder(newOrder);
+      setSubmittedOrder(newOrder);
+      window.scrollTo({ top: 80, behavior: "smooth" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // SUCCESS SCREEN
@@ -643,50 +660,6 @@ function OrderFormContent() {
                     </div>
                   );
                 })}
-
-                {/* Card: Custom Commission / Upload Image Card */}
-                <div
-                  onClick={() => {
-                    setDesignSelectionMode("custom");
-                    fileInputRef.current?.click();
-                  }}
-                  className={`cursor-pointer rounded-2xl border-2 border-dashed p-3.5 flex flex-col items-center justify-center text-center transition-all group min-h-[170px] ${
-                    customDesignImage || selectedDesign?.isCustomUpload
-                      ? "border-amber-400 bg-amber-400/10 shadow-gold-sm ring-1 ring-amber-400/50"
-                      : "border-amber-500/40 bg-zinc-950/70 hover:border-amber-400 hover:bg-amber-500/5"
-                  }`}
-                >
-                  {customDesignImage ? (
-                    <div className="w-full flex flex-col items-center">
-                      <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden mb-2 border border-amber-400/50">
-                        <img src={customDesignImage} alt="Custom uploaded design" className="h-full w-full object-cover" />
-                        <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-400 text-black px-1.5 py-0.5 text-[9.5px] font-bold shadow-md">
-                          ✓ Custom Photo
-                        </span>
-                      </div>
-                      <p className="text-xs font-bold text-amber-300 truncate w-full">
-                        {customDesignTitle || "Custom Design Commission"}
-                      </p>
-                      <p className="text-[10px] text-zinc-400 mt-0.5">Click to change picture</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-2 px-1">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400/10 text-amber-400 group-hover:bg-amber-400 group-hover:text-black transition-all mb-2 shadow-gold-sm">
-                        <UploadCloud className="h-5 w-5" />
-                      </div>
-                      <span className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
-                        + Upload Custom Design
-                      </span>
-                      <span className="text-[10px] text-zinc-400 mt-1 max-w-[170px] leading-tight">
-                        Upload your photo, sketch, or Pinterest reference
-                      </span>
-                      <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 group-hover:underline">
-                        <span>Select Image</span>
-                        <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Hidden file input */}
@@ -1356,11 +1329,21 @@ function OrderFormContent() {
 
               <button
                 type="submit"
-                className="btn-gold rounded-full px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-md"
+                disabled={isSubmitting}
+                className="btn-gold rounded-full px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-md disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <Scissors className="h-4 w-4" />
-                <span>Submit Custom Dress Request</span>
-                <ArrowRight className="h-4 w-4" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-black" />
+                    <span>Transmitting Order to Atelier...</span>
+                  </>
+                ) : (
+                  <>
+                    <Scissors className="h-4 w-4" />
+                    <span>Submit Custom Dress Request</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             </div>
           </form>

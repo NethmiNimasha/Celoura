@@ -29,7 +29,13 @@ import {
   Package
 } from "lucide-react";
 import { getSavedOrders } from "../../lib/celouraData";
-import { getStoredUser, logoutUser, getUserProfile, updateUserProfile } from "../../lib/api";
+import { 
+  getStoredUser, 
+  logoutUser, 
+  getUserProfile, 
+  updateUserProfile,
+  getOrdersByEmailApi 
+} from "../../lib/api";
 
 export default function CustomerProfilePage() {
   const router = useRouter();
@@ -122,12 +128,12 @@ export default function CustomerProfilePage() {
       }
     }
 
-    // Filter user's dress orders
+    // Filter user's dress orders (Local fallback first)
     const all = getSavedOrders();
     const userEmailNorm = (user.email || "").toLowerCase().trim();
     const userNameNorm = (user.name || "").toLowerCase().trim();
 
-    const myOrders = all.filter((o) => {
+    const filterLocalOrders = () => all.filter((o) => {
       const oEmailNorm = (o.customerEmail || "").toLowerCase().trim();
       const oNameNorm = (o.customerName || "").toLowerCase().trim();
 
@@ -139,15 +145,34 @@ export default function CustomerProfilePage() {
       return false;
     });
 
-    if (myOrders.length > 0 && !storedMeas && myOrders[0].measurements) {
+    const initialMyOrders = filterLocalOrders();
+    if (initialMyOrders.length > 0 && !storedMeas && initialMyOrders[0].measurements) {
       setSavedMeasurements((prev) => ({
         ...prev,
-        ...myOrders[0].measurements,
+        ...initialMyOrders[0].measurements,
       }));
     }
-
-    setOrders(myOrders);
+    setOrders(initialMyOrders);
     setLoading(false);
+
+    // Live sync from Spring Boot PostgreSQL backend
+    if (user.email) {
+      getOrdersByEmailApi(user.email)
+        .then((remoteOrders) => {
+          if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+            setOrders(remoteOrders);
+            if (!storedMeas && remoteOrders[0].measurements) {
+              setSavedMeasurements((prev) => ({
+                ...prev,
+                ...remoteOrders[0].measurements,
+              }));
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn("Could not load remote orders, using local storage cache:", err);
+        });
+    }
   }, [router]);
 
   const handleUpdateProfile = async (e) => {

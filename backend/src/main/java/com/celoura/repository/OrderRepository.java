@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
-    List<Order> findByCustomerEmailIgnoreCase(String customerEmail);
-    List<Order> findByCustomerPhone(String customerPhone);
-    List<Order> findByStatusIgnoreCase(String status);
+    List<Order> findAllByOrderByOrderDateDesc();
+    List<Order> findByCustomerEmailIgnoreCaseOrderByOrderDateDesc(String customerEmail);
+    List<Order> findByCustomerPhoneOrderByOrderDateDesc(String customerPhone);
+    List<Order> findByStatusIgnoreCaseOrderByOrderDateDesc(String status);
+    long countByStatusIgnoreCase(String status);
 }

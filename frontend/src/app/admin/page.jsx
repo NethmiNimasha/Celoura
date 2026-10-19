@@ -38,7 +38,13 @@ import {
   ORDER_STATUSES,
   BUSINESS_INFO
 } from "../../lib/celouraData";
-import { getStoredUser, logoutUser } from "../../lib/api";
+import { 
+  getStoredUser, 
+  logoutUser, 
+  getAllOrdersApi, 
+  updateOrderStatusApi, 
+  deleteOrderApi 
+} from "../../lib/api";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("orders"); // "orders" | "catalogue"
@@ -78,6 +84,18 @@ export default function AdminPage() {
     setAuthChecked(true);
     setOrders(getSavedOrders());
     setDesigns(getSavedDesigns());
+
+    // Fetch live orders from Spring Boot Backend
+    getAllOrdersApi()
+      .then((remoteOrders) => {
+        if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+          setOrders(remoteOrders);
+          saveOrders(remoteOrders);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend orders for admin, using local fallback:", err);
+      });
   }, [router]);
 
   const handleAdminSignOut = () => {
@@ -85,11 +103,34 @@ export default function AdminPage() {
     router.push("/signin?role=admin");
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus) => {
     const updated = updateOrderStatus(orderId, newStatus);
     setOrders(updated);
     if (selectedOrderDetails && selectedOrderDetails.id === orderId) {
       setSelectedOrderDetails({ ...selectedOrderDetails, status: newStatus });
+    }
+
+    // Persist status change to Spring Boot Backend
+    try {
+      await updateOrderStatusApi(orderId, newStatus);
+    } catch (err) {
+      console.warn("Backend order status update failed:", err);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm(`Are you sure you want to permanently delete order ${orderId}?`)) return;
+    const remaining = orders.filter((o) => o.id !== orderId);
+    setOrders(remaining);
+    saveOrders(remaining);
+    if (selectedOrderDetails && selectedOrderDetails.id === orderId) {
+      setSelectedOrderDetails(null);
+    }
+
+    try {
+      await deleteOrderApi(orderId);
+    } catch (err) {
+      console.warn("Backend delete order failed:", err);
     }
   };
 
@@ -350,12 +391,21 @@ export default function AdminPage() {
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => setSelectedOrderDetails(order)}
-                          className="rounded-full border border-amber-500/30 bg-zinc-900 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-amber-400 hover:text-white"
-                        >
-                          View Details
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setSelectedOrderDetails(order)}
+                            className="rounded-full border border-amber-500/30 bg-zinc-900 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-amber-400 hover:text-white"
+                          >
+                            View Details
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOrder(order.id)}
+                            title="Delete Order"
+                            className="flex h-7 w-7 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -504,11 +554,11 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Quick Status Updater */}
+            {/* Quick Status Updater & Actions */}
             <div className="rounded-2xl border border-amber-500/20 bg-zinc-950 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-zinc-300 font-semibold">Change Order Status:</span>
-              <div className="flex gap-2">
-                {["Pending", "Confirmed", "In Progress", "Ready", "Completed"].map((s) => (
+              <div className="flex flex-wrap gap-2 items-center">
+                {["Pending", "Confirmed", "In Progress", "Ready", "Completed", "Cancelled"].map((s) => (
                   <button
                     key={s}
                     onClick={() => handleStatusChange(selectedOrderDetails.id, s)}
@@ -521,6 +571,13 @@ export default function AdminPage() {
                     {s}
                   </button>
                 ))}
+                <button
+                  onClick={() => handleDeleteOrder(selectedOrderDetails.id)}
+                  className="rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/20 hover:text-red-300 transition flex items-center gap-1 ml-2"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>Delete</span>
+                </button>
               </div>
             </div>
           </div>

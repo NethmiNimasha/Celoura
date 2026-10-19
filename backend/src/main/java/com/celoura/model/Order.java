@@ -45,6 +45,17 @@ public class Order {
     @Column(length = 2000)
     private String notes;
 
+    @Column(columnDefinition = "TEXT")
+    private String designImage;
+
+    @Column(columnDefinition = "TEXT")
+    private String customReferenceImage;
+
+    private Boolean isCustomDesign = false;
+
+    @Column(length = 2000)
+    private String customDesignNotes;
+
     private String assignedArtisan = "Celoura Akuressa Atelier";
 
     public Order() {}
@@ -108,6 +119,18 @@ public class Order {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getDesignImage() { return designImage; }
+    public void setDesignImage(String designImage) { this.designImage = designImage; }
+
+    public String getCustomReferenceImage() { return customReferenceImage; }
+    public void setCustomReferenceImage(String customReferenceImage) { this.customReferenceImage = customReferenceImage; }
+
+    public Boolean getIsCustomDesign() { return isCustomDesign; }
+    public void setIsCustomDesign(Boolean isCustomDesign) { this.isCustomDesign = isCustomDesign; }
+
+    public String getCustomDesignNotes() { return customDesignNotes; }
+    public void setCustomDesignNotes(String customDesignNotes) { this.customDesignNotes = customDesignNotes; }
 
     public String getAssignedArtisan() { return assignedArtisan; }
     public void setAssignedArtisan(String assignedArtisan) { this.assignedArtisan = assignedArtisan; }

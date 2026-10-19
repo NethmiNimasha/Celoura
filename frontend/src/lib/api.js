@@ -166,3 +166,171 @@ export async function updateUserProfile(email, profileData) {
     throw err;
   }
 }
+
+/**
+ * ========================================================
+ * ORDERS REST API (Spring Boot Backend -> /api/orders)
+ * ========================================================
+ */
+
+/**
+ * Create a new custom order on the backend
+ */
+export async function createOrderApi(orderData) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to create order on server.");
+    }
+    return data;
+  } catch (err) {
+    console.warn("Backend order creation failed, relying on local fallback:", err);
+    throw err;
+  }
+}
+
+/**
+ * Fetch all orders (admin or filtered by email/phone/status)
+ */
+export async function getAllOrdersApi(params = {}) {
+  try {
+    const query = new URLSearchParams();
+    if (params.email) query.set("email", params.email);
+    if (params.phone) query.set("phone", params.phone);
+    if (params.status) query.set("status", params.status);
+
+    const url = `${API_BASE_URL}/orders${query.toString() ? `?${query.toString()}` : ""}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch orders from server.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend fetch orders failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Fetch orders for a specific customer by email
+ */
+export async function getOrdersByEmailApi(email) {
+  if (!email) return [];
+  return await getAllOrdersApi({ email });
+}
+
+/**
+ * Fetch a single order by ID
+ */
+export async function getOrderByIdApi(id) {
+  if (!id) return null;
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(id)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error("Failed to load order.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend getOrderById failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Update order status (Admin workflow: Pending -> Confirmed -> In Progress -> Ready -> Completed)
+ */
+export async function updateOrderStatusApi(id, status) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(id)}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to update order status.");
+    }
+    return data;
+  } catch (err) {
+    console.warn("Backend updateOrderStatus failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Full update for an order (e.g. editing assigned artisan, notes, deposit)
+ */
+export async function updateOrderApi(id, orderData) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to update order details.");
+    }
+    return data;
+  } catch (err) {
+    console.warn("Backend updateOrder failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Delete an order
+ */
+export async function deleteOrderApi(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to delete order.");
+    }
+    return data;
+  } catch (err) {
+    console.warn("Backend deleteOrder failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Get dashboard order counts and statistics
+ */
+export async function getOrderStatsApi() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/stats`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch order statistics.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend getOrderStats failed:", err);
+    throw err;
+  }
+}
+
