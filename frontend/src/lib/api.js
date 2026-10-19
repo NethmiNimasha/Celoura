@@ -334,3 +334,68 @@ export async function getOrderStatsApi() {
   }
 }
 
+/**
+ * ========================================================
+ * DESIGNS REST API (Spring Boot Backend -> /api/designs)
+ * ========================================================
+ */
+
+/**
+ * Fetch all designs from backend
+ */
+export async function getAllDesignsApi() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/designs`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch designs.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend getAllDesigns failed, fallback to local:", err);
+    throw err;
+  }
+}
+
+/**
+ * Create a new design in backend
+ */
+export async function createDesignApi(designData) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/designs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(designData),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to create design on backend.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend createDesign failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a design by ID
+ */
+export async function deleteDesignApi(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/designs/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to delete design.");
+    }
+    return true;
+  } catch (err) {
+    console.warn("Backend deleteDesign failed:", err);
+    throw err;
+  }
+}
+
+

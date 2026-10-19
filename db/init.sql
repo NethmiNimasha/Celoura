@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.designs (
     category VARCHAR(255) NOT NULL, -- Frocks & Gowns, Saree Blouses, Designer Skirts, Couture Blouses, Bridal Lehengas
     price NUMERIC(38, 2) NOT NULL,
     price_formatted VARCHAR(255),
-    image VARCHAR(255) NOT NULL,
+    image TEXT NOT NULL,
     fabric VARCHAR(255),
     color VARCHAR(255),
     embroidery VARCHAR(1000),

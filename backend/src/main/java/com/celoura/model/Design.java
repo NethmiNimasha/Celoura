@@ -21,7 +21,7 @@ public class Design {
 
     private String priceFormatted;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String image;
 
     private String fabric;
