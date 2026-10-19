@@ -380,6 +380,26 @@ export async function createDesignApi(designData) {
 }
 
 /**
+ * Update an existing design on backend
+ */
+export async function updateDesignApi(id, designData) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/designs/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(designData),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update design on backend.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("Backend updateDesign failed:", err);
+    throw err;
+  }
+}
+
+/**
  * Delete a design by ID
  */
 export async function deleteDesignApi(id) {
@@ -397,5 +417,6 @@ export async function deleteDesignApi(id) {
     throw err;
   }
 }
+
 
 

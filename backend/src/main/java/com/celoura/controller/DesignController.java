@@ -44,9 +44,17 @@ public class DesignController {
         return ResponseEntity.ok(designService.saveDesign(design));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Design> updateDesign(@PathVariable String id, @RequestBody Design updated) {
+        return designService.updateDesign(id, updated)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDesign(@PathVariable String id) {
         designService.deleteDesign(id);
         return ResponseEntity.noContent().build();
     }
 }
+

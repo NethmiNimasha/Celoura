@@ -50,6 +50,7 @@ import {
   deleteOrderApi,
   getAllDesignsApi,
   createDesignApi,
+  updateDesignApi,
   deleteDesignApi 
 } from "../../lib/api";
 
@@ -64,10 +65,19 @@ export default function AdminPage() {
 
   // Modals state
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+  
+  // Add Design State
   const [isAddDesignOpen, setIsAddDesignOpen] = useState(false);
   const [designImagePreview, setDesignImagePreview] = useState(null);
   const [isSubmittingDesign, setIsSubmittingDesign] = useState(false);
   const designFileInputRef = React.useRef(null);
+
+  // Edit Design State
+  const [editingDesign, setEditingDesign] = useState(null);
+  const [isEditDesignOpen, setIsEditDesignOpen] = useState(false);
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [isUpdatingDesign, setIsUpdatingDesign] = useState(false);
+  const editFileInputRef = React.useRef(null);
 
   const [newDesign, setNewDesign] = useState({
     id: `CEL-DSG-${Math.floor(10 + Math.random() * 90)}`,
@@ -251,6 +261,59 @@ export default function AdminPage() {
       console.warn("Backend delete design failed:", err);
     }
   };
+
+  const handleOpenEditDesign = (design) => {
+    setEditingDesign({ ...design });
+    setEditImagePreview(design.image);
+    setIsEditDesignOpen(true);
+  };
+
+  const handleEditDesignImageUpload = (file) => {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith("image/")) {
+      alert("Please upload an image file (PNG, JPG, WEBP).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditImagePreview(reader.result);
+      setEditingDesign((prev) => ({ ...prev, image: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateDesignSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingDesign || !editingDesign.title) return;
+
+    setIsUpdatingDesign(true);
+    const finalImage = editImagePreview || editingDesign.image || "/images/hero-model.jpg";
+    const formattedDesign = {
+      ...editingDesign,
+      image: finalImage,
+      priceFormatted: `LKR ${Number(editingDesign.price).toLocaleString()}`,
+    };
+
+    // Optimistically update local list
+    const updatedDesigns = designs.map((d) => 
+      d.id === formattedDesign.id ? formattedDesign : d
+    );
+    setDesigns(updatedDesigns);
+    saveDesigns(updatedDesigns);
+
+    // Save update to Spring Boot PostgreSQL backend
+    try {
+      await updateDesignApi(formattedDesign.id, formattedDesign);
+    } catch (err) {
+      console.warn("Backend updateDesign warning:", err);
+    }
+
+    setIsUpdatingDesign(false);
+    setIsEditDesignOpen(false);
+    setEditingDesign(null);
+    setEditImagePreview(null);
+  };
+
 
   // Metrics
   const totalOrdersCount = orders.length;
@@ -536,13 +599,22 @@ export default function AdminPage() {
 
                 <div className="pt-4 border-t border-zinc-800 flex items-center justify-between mt-4">
                   <span className="text-[11px] text-zinc-500 font-mono">{design.id}</span>
-                  <button
-                    onClick={() => handleDeleteDesign(design.id)}
-                    className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span>Delete</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEditDesign(design)}
+                      className="rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300 hover:bg-amber-500/20 hover:text-amber-200 transition flex items-center gap-1"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDesign(design.id)}
+                      className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 hover:text-red-300 transition flex items-center gap-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -918,6 +990,272 @@ export default function AdminPage() {
                     <>
                       <Save className="h-4 w-4" />
                       <span>Publish Design</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT DESIGN */}
+      {isEditDesignOpen && editingDesign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl border border-amber-500/40 bg-[#0d0d14] p-6 sm:p-8 shadow-2xl">
+            <button
+              onClick={() => {
+                setIsEditDesignOpen(false);
+                setEditingDesign(null);
+                setEditImagePreview(null);
+              }}
+              className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700 transition"
+            >
+              ✕
+            </button>
+
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-[11px] font-semibold text-amber-300 uppercase tracking-widest mb-2">
+                <Crown className="h-3 w-3 text-amber-400" />
+                <span>Atelier Fashion Editor &bull; {editingDesign.id}</span>
+              </div>
+              <h3 className="font-cinzel text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-amber-400" />
+                <span>Edit Design Details</span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-1">
+                Update couture specifications, photo, pricing, and descriptions for this design.
+              </p>
+            </div>
+
+            <form onSubmit={handleUpdateDesignSubmit} className="space-y-4 text-xs">
+              {/* Image Upload & Preview Section */}
+              <div>
+                <label className="text-zinc-300 block mb-1.5 font-medium flex items-center justify-between">
+                  <span>Garment Photo *</span>
+                  <span className="text-[11px] text-amber-400">Custom Photo or High-Res Preset</span>
+                </label>
+
+                <input
+                  type="file"
+                  ref={editFileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleEditDesignImageUpload(e.target.files?.[0])}
+                />
+
+                {editImagePreview ? (
+                  <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden border-2 border-amber-500/50 bg-black shadow-gold-sm mb-3">
+                    <img
+                      src={editImagePreview}
+                      alt="Edit Design Preview"
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute bottom-3 right-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => editFileInputRef.current?.click()}
+                        className="rounded-full bg-black/80 px-3 py-1.5 text-[11px] font-semibold text-amber-300 border border-amber-400/50 hover:bg-black"
+                      >
+                        Change Photo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditImagePreview(null);
+                          setEditingDesign((prev) => ({ ...prev, image: "" }));
+                        }}
+                        className="rounded-full bg-red-900/80 px-3 py-1.5 text-[11px] font-semibold text-red-200 border border-red-500/50 hover:bg-red-800"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => editFileInputRef.current?.click()}
+                    className="border-2 border-dashed border-zinc-700 hover:border-amber-400 rounded-2xl p-6 text-center cursor-pointer transition bg-zinc-950/60 hover:bg-zinc-900/60 group mb-3"
+                  >
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-400/10 text-amber-400 group-hover:scale-110 transition">
+                      <UploadCloud className="h-6 w-6" />
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-white">
+                      Click to upload new garment photograph
+                    </p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">
+                      Supports JPG, PNG, WEBP from your computer
+                    </p>
+                  </div>
+                )}
+
+                {/* Quick Presets Picker */}
+                <div>
+                  <span className="text-[11px] text-zinc-400 block mb-1.5">Or choose an atelier studio preset:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { name: "Gold Frock", img: "/images/frock-evening.jpg" },
+                      { name: "Bridal Blouse", img: "/images/saree-blouse.jpg" },
+                      { name: "Flared Skirt", img: "/images/skirt-flare.jpg" },
+                      { name: "Ivory Dream", img: "/images/ivory-dream.jpg" },
+                      { name: "Wine Velvet", img: "/images/wine-elegance.jpg" },
+                      { name: "Rose Saree", img: "/images/saree-pink.jpg" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => {
+                          setEditImagePreview(preset.img);
+                          setEditingDesign((prev) => ({ ...prev, image: preset.img }));
+                        }}
+                        className={`rounded-lg border px-2.5 py-1 text-[11px] transition ${
+                          editImagePreview === preset.img
+                            ? "border-amber-400 bg-amber-400/20 text-amber-300 font-bold"
+                            : "border-zinc-800 bg-zinc-900/70 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Design Title */}
+              <div>
+                <label className="text-zinc-300 block mb-1 font-medium">Design Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Royal Jahanara Velvet Lehenga"
+                  value={editingDesign.title || ""}
+                  onChange={(e) => setEditingDesign({ ...editingDesign, title: e.target.value })}
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
+                />
+              </div>
+
+              {/* Category & Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Category *</label>
+                  <select
+                    value={editingDesign.category || "Bridal Lehengas"}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, category: e.target.value })}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  >
+                    <option value="Bridal Lehengas">Bridal Lehengas</option>
+                    <option value="Frocks & Gowns">Frocks & Gowns</option>
+                    <option value="Saree Blouses">Saree Blouses</option>
+                    <option value="Designer Skirts">Designer Skirts</option>
+                    <option value="Couture Blouses">Couture Blouses</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Starting Price (LKR) *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1000}
+                    value={editingDesign.price || 0}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, price: Number(e.target.value) })}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Silhouette & Embroidery */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Silhouette</label>
+                  <select
+                    value={editingDesign.silhouette || "Circular Flared (6-Meter Gher)"}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, silhouette: e.target.value })}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  >
+                    <option value="Circular Flared (6-Meter Gher)">Circular Flared (6-Meter Gher)</option>
+                    <option value="Heavy A-Line Flare with Triple Can-Can">Heavy A-Line Flare with Triple Can-Can</option>
+                    <option value="Flared Trail Skirt with Structured Waist">Flared Trail Skirt with Structured Waist</option>
+                    <option value="Princess Cut Bridal Blouse">Princess Cut Bridal Blouse</option>
+                    <option value="A-Line Flared Frock">A-Line Flared Frock</option>
+                    <option value="Paneled Fluted Mermaid">Paneled Fluted Mermaid</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Embroidery Style</label>
+                  <input
+                    type="text"
+                    value={editingDesign.embroidery || ""}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, embroidery: e.target.value })}
+                    placeholder="e.g. Handcrafted Antique Gold Zardozi & Dabka"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
+                  />
+                </div>
+              </div>
+
+              {/* Fabric & Colour */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Fabric Type</label>
+                  <input
+                    type="text"
+                    value={editingDesign.fabric || ""}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, fabric: e.target.value })}
+                    placeholder="e.g. Pure Raw Silk & Italian Velvet"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-zinc-300 block mb-1 font-medium">Colour</label>
+                  <input
+                    type="text"
+                    value={editingDesign.color || ""}
+                    onChange={(e) => setEditingDesign({ ...editingDesign, color: e.target.value })}
+                    placeholder="e.g. Obsidian Black & Imperial Gold"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-zinc-300 block mb-1 font-medium">Couture Description</label>
+                <textarea
+                  rows={3}
+                  value={editingDesign.description || ""}
+                  onChange={(e) => setEditingDesign({ ...editingDesign, description: e.target.value })}
+                  placeholder="Artisan craftsmanship details, embroidery motifs, fitting recommendations..."
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditDesignOpen(false);
+                    setEditingDesign(null);
+                    setEditImagePreview(null);
+                  }}
+                  className="btn-gold-outline rounded-full px-5 py-2 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingDesign}
+                  className="btn-gold rounded-full px-7 py-2.5 font-bold uppercase tracking-wider text-black flex items-center gap-2 shadow-gold-sm disabled:opacity-60"
+                >
+                  {isUpdatingDesign ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-black" />
+                      <span>Updating Design...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <span>Update Design</span>
                     </>
                   )}
                 </button>
