@@ -78,6 +78,12 @@
       "namedRegex": "^/profile(?:/)?$"
     },
     {
+      "page": "/recommendations",
+      "regex": "^/recommendations(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/recommendations(?:/)?$"
+    },
+    {
       "page": "/signin",
       "regex": "^/signin(?:/)?$",
       "routeKeys": {},
@@ -88,6 +94,12 @@
       "regex": "^/signup(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/signup(?:/)?$"
+    },
+    {
+      "page": "/stylist",
+      "regex": "^/stylist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/stylist(?:/)?$"
     },
     {
       "page": "/track",

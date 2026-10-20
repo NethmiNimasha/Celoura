@@ -8,7 +8,9 @@
   "/order/page": "app/order/page.js",
   "/page": "app/page.js",
   "/profile/page": "app/profile/page.js",
+  "/recommendations/page": "app/recommendations/page.js",
   "/signin/page": "app/signin/page.js",
   "/signup/page": "app/signup/page.js",
+  "/stylist/page": "app/stylist/page.js",
   "/track/page": "app/track/page.js"
 }

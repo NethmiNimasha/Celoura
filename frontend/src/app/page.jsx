@@ -189,6 +189,141 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* AI FASHION STYLIST FEATURE SECTION */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="relative overflow-hidden rounded-3xl border border-amber-400/40 bg-gradient-to-r from-[#12121c] via-[#0d0d14] to-[#12121c] p-6 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.85)] ring-1 ring-amber-400/20">
+          
+          {/* Ambient Gold Glow */}
+          <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-amber-500/15 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-600/10 blur-[100px] pointer-events-none" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+            
+            {/* Left Content (7 cols) */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-amber-300">
+                <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                <span>Advanced AI Fashion Recommendations</span>
+              </div>
+
+              <h2 className="font-cinzel text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+                Not Sure What Fits You Best? <br />
+                <span className="font-script text-3xl sm:text-5xl text-[#f3d995] font-normal">
+                  Let Our AI Stylist Guide You
+                </span>
+              </h2>
+
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light max-w-xl">
+                Every silhouette at Celoura is bespoke. In 6 short questions, our algorithmic styling engine analyzes your event, body frame, and skin undertone to formulate your custom tailoring blueprint.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Occasion Match</span>
+                  <span className="text-zinc-400 text-[11px]">Bridal, Reception, Sangeet & Galas</span>
+                </div>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Anatomical Fit</span>
+                  <span className="text-zinc-400 text-[11px]">Hourglass, Pear, Apple, Petite</span>
+                </div>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Undertone Harmony</span>
+                  <span className="text-zinc-400 text-[11px]">Warm Gold, Jewel, Neutral Tones</span>
+                </div>
+              </div>
+
+              <div className="pt-3 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/recommendations"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500 px-7 py-3 text-xs sm:text-sm font-bold text-black uppercase tracking-wider shadow-gold-md hover:scale-105 transition-all group"
+                >
+                  <Sparkles className="h-4 w-4 fill-black" />
+                  <span>Launch AI Fashion Stylist</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+
+                <Link
+                  href="/catalogue"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/80 px-5 py-3 text-xs sm:text-sm font-medium text-zinc-300 hover:text-white hover:border-amber-400/50 transition-colors"
+                >
+                  <span>Browse Full Catalogue</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Interactive Mockup Card (5 cols) */}
+            <div className="lg:col-span-5">
+              <div className="relative rounded-2xl border border-amber-500/30 bg-black/90 p-5 shadow-2xl backdrop-blur-xl group hover:border-amber-400/60 transition-colors">
+                
+                {/* Floating Badge */}
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 text-xs">
+                  <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                    <Crown className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Haute Couture AI Pick</span>
+                  </div>
+                  <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-300 border border-amber-400/40">
+                    98% Bespoke Match
+                  </span>
+                </div>
+
+                {/* Preview Mini Showcase */}
+                <div className="mt-4 flex gap-4 items-center">
+                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-amber-400/40">
+                    <Image
+                      src="/images/royal-bloom.jpg"
+                      alt="Top Recommendation"
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                      Bridal Lehengas
+                    </span>
+                    <h3 className="font-cinzel text-sm font-bold text-white">
+                      The Royal Empress Bridal Lehenga
+                    </h3>
+                    <p className="text-[11px] text-zinc-400">
+                      Italian Micro-Velvet & 24K Gold Zari
+                    </p>
+                    <span className="text-xs font-bold text-amber-300 block">
+                      LKR 185,000
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stylist Insights list */}
+                <div className="mt-4 space-y-1.5 pt-3 border-t border-zinc-800/80 text-[11px] text-zinc-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">Target Silhouette:</span>
+                    <span className="text-amber-200">6-Meter Circular Flare</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">Recommended Neckline:</span>
+                    <span className="text-amber-200">Sweetheart Corset Plunge</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">Undertone Harmony:</span>
+                    <span className="text-amber-200">Warm Golden & Obsidian</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3">
+                  <Link
+                    href="/recommendations"
+                    className="block w-full rounded-xl bg-amber-400/15 border border-amber-400/40 py-2 text-center text-xs font-bold text-amber-300 hover:bg-amber-400/25 transition-all"
+                  >
+                    Take the 60-Sec Style Quiz →
+                  </Link>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* 3. EXPLORE OUR COLLECTION (5 Garment Categories: Frocks, Saree Blouses, Skirts, Blouses, Lehengas) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">

@@ -10,7 +10,8 @@ import {
   Clock, 
   ShieldCheck, 
   Crown,
-  User
+  User,
+  Sparkles
 } from "lucide-react";
 import { BUSINESS_INFO } from "../lib/celouraData";
 import { getStoredUser } from "../lib/api";
@@ -123,10 +124,22 @@ export default function Navbar() {
               className={`relative text-xs sm:text-sm font-medium tracking-wide transition-all hover:text-amber-300 ${
                 pathname === "/" ? "text-amber-300 font-bold" : "text-zinc-300"
               }`}
-              
             >
               Home
               {pathname === "/" && (
+                <span className="absolute -bottom-1 sm:-bottom-1.5 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 shadow-gold-sm" />
+              )}
+            </Link>
+
+            <Link
+              href="/recommendations"
+              className={`relative flex items-center gap-1.5 text-xs sm:text-sm font-medium tracking-wide transition-all hover:text-amber-300 ${
+                pathname === "/recommendations" || pathname === "/stylist" ? "text-amber-300 font-bold" : "text-zinc-300"
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+              <span>AI Stylist</span>
+              {(pathname === "/recommendations" || pathname === "/stylist") && (
                 <span className="absolute -bottom-1 sm:-bottom-1.5 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 shadow-gold-sm" />
               )}
             </Link>

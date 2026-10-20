@@ -35,12 +35,12 @@ The system focuses on the online presentation of fashion designs and the managem
 - Administrative order management.
 - Responsive user interface.
 - Business information and contact details.
+- Advanced AI-based fashion recommendations (AI Stylist, occasion & body-shape matching, bespoke tailoring blueprints).
 
 ### Out of Scope for the Initial Version
 
 - Online payment gateway integration.
 - Automated delivery and courier tracking.
-- Advanced AI-based fashion recommendations.
 - Full-scale inventory and supplier management.
 
 These features may be considered for future development.
@@ -89,6 +89,7 @@ The administrator can:
 | FR-10 | Manage Designs | Allow administrators to maintain the fashion catalogue. |
 | FR-11 | Contact Information | Display the business location, opening hours, and contact details. |
 | FR-12 | Input Validation | Validate customer inputs and required order information. |
+| FR-13 | AI Fashion Recommendations | Provide interactive AI-guided recommendations for dress designs, silhouettes, necklines, and color palettes based on occasion, body shape, skin undertone, and budget with 1-click custom order integration. |
 
 ## 6. Non-Functional Requirements
 

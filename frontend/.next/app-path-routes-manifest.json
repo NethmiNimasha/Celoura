@@ -8,7 +8,9 @@
   "/order/page": "/order",
   "/page": "/",
   "/profile/page": "/profile",
+  "/recommendations/page": "/recommendations",
   "/signin/page": "/signin",
   "/signup/page": "/signup",
+  "/stylist/page": "/stylist",
   "/track/page": "/track"
 }

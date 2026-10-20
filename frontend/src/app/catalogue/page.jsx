@@ -81,6 +81,29 @@ function CatalogueContent() {
         </p>
       </div>
 
+      {/* AI Stylist Recommendation Banner */}
+      <div className="mb-8 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-[#0e0e16] to-amber-500/15 p-4 sm:p-5 backdrop-blur-md shadow-gold-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-amber-400 text-black flex items-center justify-center shrink-0 shadow-gold-sm">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-cinzel text-sm sm:text-base font-bold text-amber-200">
+              Not sure which silhouette suits your body frame or event?
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Take our 60-second AI Fashion Stylist quiz to get personalized recommendations and custom tailoring blueprints.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/recommendations"
+          className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-5 py-2 text-xs font-bold text-black uppercase tracking-wider shadow-gold-sm hover:scale-105 transition-all shrink-0"
+        >
+          Consult AI Stylist →
+        </Link>
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="mb-10 space-y-4 rounded-3xl border border-amber-500/20 bg-[#0c0c12] p-5 shadow-lg">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">

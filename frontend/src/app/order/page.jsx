@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { 
   INITIAL_DESIGNS, 
+  getSavedDesigns,
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
@@ -91,6 +92,14 @@ function OrderFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedDesignId = searchParams.get("design");
+  const preselectedCategory = searchParams.get("category");
+  const preselectedColor = searchParams.get("color");
+  const preselectedFabric = searchParams.get("fabric");
+  const preselectedSilhouette = searchParams.get("silhouette");
+  const preselectedNeckline = searchParams.get("neckline");
+  const preselectedSleeve = searchParams.get("sleeve");
+  const preselectedStylistNotes = searchParams.get("stylistNotes");
+  const isAiStylistSource = searchParams.get("source") === "ai-stylist";
   const [authChecked, setAuthChecked] = useState(false);
 
   const [step, setStep] = useState(1);
@@ -216,8 +225,10 @@ function OrderFormContent() {
   useEffect(() => {
     const user = getStoredUser();
     if (!user) {
-      // Unauthenticated visitor trying to start order: show sign in first!
-      const currentQuery = preselectedDesignId ? `?design=${preselectedDesignId}` : "";
+      // Unauthenticated visitor trying to start order: show sign in first, preserving all AI stylist params!
+      const currentQuery = typeof window !== "undefined" && window.location.search 
+        ? window.location.search 
+        : (preselectedDesignId ? `?design=${preselectedDesignId}` : "");
       router.push(`/signin?redirect=${encodeURIComponent(`/order${currentQuery}`)}`);
       return;
     }
@@ -238,16 +249,35 @@ function OrderFormContent() {
       }
     }
 
+    const allDesigns = typeof window !== "undefined" ? getSavedDesigns() : INITIAL_DESIGNS;
     if (preselectedDesignId) {
-      const found = INITIAL_DESIGNS.find((d) => d.id === preselectedDesignId);
+      const found = allDesigns.find((d) => d.id === preselectedDesignId) || INITIAL_DESIGNS.find((d) => d.id === preselectedDesignId);
       if (found) {
         setSelectedDesign(found);
         setCustomDesignTitle(found.title);
         if (found.category) setGarmentType(found.category);
         if (found.silhouette) setSilhouette(found.silhouette);
+        setDesignSelectionMode("catalogue");
       }
     }
-  }, [preselectedDesignId]);
+
+    if (preselectedCategory) setGarmentType(preselectedCategory);
+    if (preselectedSilhouette) setSilhouette(preselectedSilhouette);
+    if (preselectedColor) setSelectedColor(preselectedColor);
+    if (preselectedFabric) setSelectedFabric(preselectedFabric);
+    if (preselectedNeckline) setNeckline(preselectedNeckline);
+    if (preselectedSleeve) setSleeve(preselectedSleeve);
+    if (preselectedStylistNotes) setSpecialNotes(preselectedStylistNotes);
+  }, [
+    preselectedDesignId,
+    preselectedCategory,
+    preselectedSilhouette,
+    preselectedColor,
+    preselectedFabric,
+    preselectedNeckline,
+    preselectedSleeve,
+    preselectedStylistNotes,
+  ]);
 
   const handleSizePresetChange = (preset) => {
     setSelectedSizePreset(preset);
@@ -495,6 +525,95 @@ function OrderFormContent() {
         </p>
       </div>
 
+      {/* AI Stylist Recommendation Active Banner & Design Spotlight */}
+      {isAiStylistSource && (
+        <div className="mb-10 rounded-3xl border-2 border-amber-400/80 bg-gradient-to-r from-[#14141f] via-[#0d0d14] to-[#14141f] p-5 sm:p-7 backdrop-blur-xl shadow-[0_15px_40px_rgba(212,175,55,0.22)] ring-1 ring-amber-400/40">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-amber-500/30">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-black shrink-0 shadow-gold-sm">
+                <Sparkles className="h-5 w-5 fill-black animate-pulse" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 block">
+                  Celoura Haute Couture AI Consultation
+                </span>
+                <h3 className="font-cinzel text-base sm:text-lg font-bold text-white">
+                  Design Suggested by AI Stylist
+                </h3>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 border border-amber-400/50 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-gold-sm">
+              <Check className="h-3.5 w-3.5 stroke-[3]" />
+              <span>Loaded as Active Foundation</span>
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-5 items-center">
+            {/* Design Thumbnail Image */}
+            {selectedDesign?.image && (
+              <div className="relative h-28 w-28 sm:h-32 sm:w-32 shrink-0 overflow-hidden rounded-2xl border-2 border-amber-400/70 shadow-gold-sm bg-black">
+                <Image
+                  src={selectedDesign.image}
+                  alt={selectedDesign.title}
+                  fill
+                  className="object-cover object-top"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* Content Details */}
+            <div className="flex-1 space-y-2 text-left w-full">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">
+                    {selectedDesign?.category || garmentType}
+                  </span>
+                  <h4 className="font-cinzel text-lg sm:text-xl font-bold text-white">
+                    {selectedDesign?.title || customDesignTitle || "Bespoke Custom Dress"}
+                  </h4>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-zinc-400 block">Base Investment</span>
+                  <span className="font-cinzel text-amber-300 text-base sm:text-lg font-bold">
+                    {selectedDesign?.priceFormatted || (selectedDesign ? `LKR ${selectedDesign.price?.toLocaleString()}` : "")}
+                  </span>
+                </div>
+              </div>
+
+              {selectedDesign?.description && (
+                <p className="text-xs text-zinc-300 line-clamp-2 mt-0.5 font-light">
+                  {selectedDesign.description}
+                </p>
+              )}
+
+              {/* Pre-configured AI Specs pills */}
+              <div className="flex flex-wrap gap-2 pt-2 text-[11px]">
+                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                  <strong className="text-zinc-500 font-normal">Colour:</strong> <span className="font-semibold">{selectedColor}</span>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                  <strong className="text-zinc-500 font-normal">Fabric:</strong> <span className="font-semibold">{selectedFabric}</span>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                  <strong className="text-zinc-500 font-normal">Silhouette:</strong> <span className="font-semibold">{silhouette}</span>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                  <strong className="text-zinc-500 font-normal">Neckline:</strong> <span className="font-semibold">{neckline}</span>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                  <strong className="text-zinc-500 font-normal">Sleeve:</strong> <span className="font-semibold">{sleeve}</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-zinc-400 italic pt-1">
+                *The design above was chosen by the AI Stylist to flatter your frame. You can fine-tune any element below or proceed directly to measurements.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Multi-Step Wizard Progress Bar */}
       <div className="mb-10">
         <div className="grid grid-cols-4 gap-2 text-center text-xs">
@@ -633,33 +752,73 @@ function OrderFormContent() {
                 </div>
               </div>
 
+              {/* AI Suggested Foundation Banner if active */}
+              {isAiStylistSource && selectedDesign && (
+                <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-500/20 via-[#101018] to-amber-500/15 p-4 sm:p-5 shadow-[0_0_20px_rgba(212,175,55,0.2)] flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 border-amber-400 bg-black shadow-gold-sm">
+                      <Image src={selectedDesign.image} alt={selectedDesign.title} fill className="object-cover object-top" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-black px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider mb-1">
+                        <Sparkles className="h-2.5 w-2.5 fill-black" />
+                        Design Suggested by Celoura AI Stylist
+                      </span>
+                      <h4 className="font-cinzel text-sm sm:text-base font-bold text-white truncate">
+                        {selectedDesign.title}
+                      </h4>
+                      <p className="text-[11px] text-amber-300 font-semibold">
+                        {selectedDesign.priceFormatted} · {selectedDesign.category}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-3 py-1 text-xs font-bold shrink-0">
+                    <Check className="h-3.5 w-3.5 stroke-[3]" />
+                    <span>Selected Foundation</span>
+                  </span>
+                </div>
+              )}
+
               {/* Design Cards Grid: Catalogue items + Custom Upload Card */}
               <div className="grid sm:grid-cols-3 gap-4">
-                {INITIAL_DESIGNS.filter((d) => d.category === garmentType).map((d) => {
-                  const isSelected = selectedDesign?.id === d.id && !customDesignImage;
-                  return (
-                    <div
-                      key={d.id}
-                      onClick={() => {
-                        setSelectedDesign(d);
-                        setCustomDesignTitle(d.title);
-                        if (d.silhouette) setSilhouette(d.silhouette);
-                        setDesignSelectionMode("catalogue");
-                      }}
-                      className={`cursor-pointer rounded-2xl border p-3 transition-all ${
-                        isSelected
-                          ? "border-amber-400 bg-amber-400/10 shadow-gold-sm ring-1 ring-amber-400/50"
-                          : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-600"
-                      }`}
-                    >
-                      <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden mb-2">
-                        <Image src={d.image} alt={d.title} fill className="object-cover" />
+                {(typeof window !== "undefined" ? getSavedDesigns() : INITIAL_DESIGNS)
+                  .filter((d) => d.category === garmentType)
+                  .map((d) => {
+                    const isSelected = selectedDesign?.id === d.id && !customDesignImage;
+                    const isAiSuggestedThis = isAiStylistSource && selectedDesign?.id === d.id;
+                    return (
+                      <div
+                        key={d.id}
+                        onClick={() => {
+                          setSelectedDesign(d);
+                          setCustomDesignTitle(d.title);
+                          if (d.silhouette) setSilhouette(d.silhouette);
+                          setDesignSelectionMode("catalogue");
+                        }}
+                        className={`cursor-pointer rounded-2xl border p-3 transition-all relative ${
+                          isSelected
+                            ? "border-amber-400 bg-amber-400/15 shadow-gold-md ring-2 ring-amber-400/70"
+                            : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-600"
+                        }`}
+                      >
+                        {isAiSuggestedThis && (
+                          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-amber-400 text-black px-2 py-0.5 text-[10px] font-extrabold shadow-md">
+                            <Sparkles className="h-3 w-3 fill-black" />
+                            <span>SUGGESTED BY AI</span>
+                          </div>
+                        )}
+                        <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden mb-2">
+                          <Image src={d.image} alt={d.title} fill className="object-cover" />
+                        </div>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs font-bold text-white truncate">{d.title}</p>
+                          {isSelected && <Check className="h-3.5 w-3.5 text-amber-400 shrink-0 stroke-[3]" />}
+                        </div>
+                        <p className="text-[11px] text-amber-400 font-semibold mt-0.5">{d.priceFormatted}</p>
                       </div>
-                      <p className="text-xs font-bold text-white truncate">{d.title}</p>
-                      <p className="text-[11px] text-amber-400 font-semibold mt-0.5">{d.priceFormatted}</p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
 
               {/* Hidden file input */}
@@ -1295,6 +1454,35 @@ function OrderFormContent() {
                         "{customDesignNotes}"
                       </p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Selected Design / AI Suggested Design Preview in Summary */}
+              {selectedDesign && !customDesignImage && (
+                <div className="flex items-center gap-3.5 rounded-xl border border-amber-500/40 bg-black/60 p-3.5 shadow-gold-sm">
+                  <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-lg overflow-hidden border border-amber-400/50 shadow-gold-sm bg-black">
+                    <Image src={selectedDesign.image} alt={selectedDesign.title} fill className="object-cover object-top" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {isAiStylistSource ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-black px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider">
+                          <Sparkles className="h-2.5 w-2.5 fill-black" />
+                          Design Suggested by AI Stylist
+                        </span>
+                      ) : (
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 block">
+                          Selected Foundation Design
+                        </span>
+                      )}
+                    </div>
+                    <strong className="font-cinzel text-xs sm:text-sm font-bold text-white block truncate">
+                      {selectedDesign.title}
+                    </strong>
+                    <span className="text-[11px] text-amber-300 font-semibold block">
+                      {selectedDesign.priceFormatted} · {selectedDesign.category}
+                    </span>
                   </div>
                 </div>
               )}
