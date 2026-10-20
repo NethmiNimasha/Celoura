@@ -36,7 +36,8 @@ import {
   BUDGET_TIERS,
   getFashionRecommendations 
 } from "../../lib/recommendationEngine";
-import { BUSINESS_INFO, GARMENT_TYPES } from "../../lib/celouraData";
+import { BUSINESS_INFO, GARMENT_TYPES, getSavedDesigns, saveDesigns } from "../../lib/celouraData";
+import { getAllDesignsApi } from "../../lib/api";
 
 export default function AiRecommendationsPage() {
   // Wizard Step State: 1 to 6, or 'analyzing', or 'results'
@@ -52,6 +53,22 @@ export default function AiRecommendationsPage() {
   const [selectedEmbellishment, setSelectedEmbellishment] = useState(EMBELLISHMENT_PREFERENCES[0].id);
   const [selectedBudget, setSelectedBudget] = useState(BUDGET_TIERS[0].id);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+
+  useEffect(() => {
+    const cached = getSavedDesigns();
+    if (cached.length > 0) setDesigns(cached);
+    getAllDesignsApi()
+      .then((remoteDesigns) => {
+        if (Array.isArray(remoteDesigns)) {
+          setDesigns(remoteDesigns);
+          saveDesigns(remoteDesigns);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend designs for recommendations:", err);
+      });
+  }, []);
 
   // UI States
   const [activeTab, setActiveTab] = useState("blueprint"); // "blueprint" | "undertone" | "couture"
@@ -68,6 +85,7 @@ export default function AiRecommendationsPage() {
       embellishmentId: selectedEmbellishment,
       budgetId: selectedBudget,
       freeQuery: customPrompt,
+      designsList: designs,
     });
   }, [
     selectedOccasion,
@@ -77,6 +95,7 @@ export default function AiRecommendationsPage() {
     selectedEmbellishment,
     selectedBudget,
     customPrompt,
+    designs,
   ]);
 
   const { topPick, curatedRecommendations, activeProfile } = recommendationData;
@@ -124,18 +143,18 @@ export default function AiRecommendationsPage() {
         <div className="mb-8 text-center sm:mb-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-300 shadow-gold-sm">
             <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-            <span>Celoura Bespoke AI Haute Couture Stylist</span>
+            <span>Celoura AI Style Helper</span>
           </div>
 
           <h1 className="mt-4 font-cinzel text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white">
-            Find Your Dream Silhouette <br />
+            Find Your Dream Dress <br />
             <span className="font-script text-4xl sm:text-6xl text-[#f3d995]">
-              Tailored by Artificial Intelligence
+              Made for Your Body & Style
             </span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
-            Answer 6 couture styling questions. Our intelligent fashion algorithm analyzes your occasion, body frame, skin undertone, and fabric preferences to craft your bespoke match.
+            Answer 6 quick questions. Our AI finds the dress that fits your body shape, event, and favorite colors best in under 60 seconds.
           </p>
         </div>
 
@@ -150,15 +169,15 @@ export default function AiRecommendationsPage() {
               <div className="flex items-center justify-between text-xs sm:text-sm font-medium text-amber-200/90 mb-3">
                 <span className="font-cinzel tracking-wider">
                   Step {currentStep} of 6: {
-                    currentStep === 1 ? "Occasion & Event" :
-                    currentStep === 2 ? "Garment Category" :
-                    currentStep === 3 ? "Body Frame & Silhouette" :
-                    currentStep === 4 ? "Undertone & Palette" :
-                    currentStep === 5 ? "Handcraft & Embellishment" :
-                    "Budget & Bespoke Notes"
+                    currentStep === 1 ? "Your Event" :
+                    currentStep === 2 ? "Dress Type" :
+                    currentStep === 3 ? "Body Shape" :
+                    currentStep === 4 ? "Best Colors" :
+                    currentStep === 5 ? "Handmade Details" :
+                    "Your Budget"
                   }
                 </span>
-                <span className="text-zinc-500">{Math.round((currentStep / 6) * 100)}% Complete</span>
+                <span className="text-zinc-500">{Math.round((currentStep / 6) * 100)}% Done</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
                 <div 
@@ -169,7 +188,7 @@ export default function AiRecommendationsPage() {
 
               {/* Step Indicators */}
               <div className="hidden sm:grid grid-cols-6 gap-2 mt-4 pt-3 border-t border-zinc-800/60 text-[11px] text-zinc-400">
-                {["1. Occasion", "2. Category", "3. Body Frame", "4. Undertone", "5. Embellishment", "6. Investment"].map((label, idx) => (
+                {["1. Event", "2. Dress Type", "3. Body Shape", "4. Best Colors", "5. Details", "6. Budget"].map((label, idx) => (
                   <button
                     key={label}
                     onClick={() => setCurrentStep(idx + 1)}
@@ -195,10 +214,10 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      What is the special occasion you are dressing for?
+                      What is your special event?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Celoura outfits are architected differently for bridal walk-ins versus fluid sangeet dance nights or cocktail parties.
+                      Tell us where you are going so we can pick dresses that match the mood and venue.
                     </p>
                   </div>
 
@@ -240,10 +259,10 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      Do you have a specific garment category in mind?
+                      What kind of dress would you like?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Choose "All Bespoke Designs" to let the AI explore our entire haute couture archive.
+                      Choose "All Designs" to see everything, or pick a specific style you prefer.
                     </p>
                   </div>
 
@@ -277,10 +296,10 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      Select your body frame & silhouette preference
+                      What is your body shape?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Celoura master tailors cut patterns specifically to flatter your natural proportions and highlight your best features.
+                      We use your body shape to suggest cuts and flared styles that look most flattering on you.
                     </p>
                   </div>
 
@@ -318,7 +337,7 @@ export default function AiRecommendationsPage() {
                             </div>
                           </div>
                           <p className="mt-3 text-xs text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2 font-light">
-                            <strong className="text-zinc-300 font-medium">Stylist Rule:</strong> {shape.stylingTip}
+                            <strong className="text-zinc-300 font-medium">Why this cut fits you:</strong> {shape.stylingTip}
                           </p>
                         </div>
                       );
@@ -332,10 +351,10 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      What is your skin undertone & preferred color harmony?
+                      What colors look best on your skin?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Harmonizing fabric dye and zari embroidery temperature with your complexion produces a radiant royal glow.
+                      Picking colors that match your skin tone helps you look radiant and glowing in photos.
                     </p>
                   </div>
 
@@ -387,10 +406,10 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      Which handcrafted detailing speaks to your aesthetic?
+                      What details or embroidery do you like?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Celoura specializes in heirloom bullion wire handwork, Aari maggam, Banarasi brocades, and modern crystal corsetry.
+                      Choose between traditional gold thread handwork, sparkling crystals, or clean simple silk.
                     </p>
                   </div>
 
@@ -435,17 +454,17 @@ export default function AiRecommendationsPage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div>
                     <h2 className="font-cinzel text-xl sm:text-2xl text-white font-semibold">
-                      Investment range & bespoke stylist notes
+                      What is your budget & special requests?
                     </h2>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      Finalize your target budget tier and optionally write any specific dream details (venue, weather, necklines, etc.).
+                      Pick your price range and tell us any special ideas you have for your dress.
                     </p>
                   </div>
 
                   {/* Budget Selector */}
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 block">
-                      Target Budget Range
+                      Your Budget
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {BUDGET_TIERS.map((tier) => {
@@ -472,13 +491,13 @@ export default function AiRecommendationsPage() {
                   <div className="space-y-2 pt-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Any Specific Stylist Notes or Desires? (Optional)</span>
+                      <span>Any Special Requests or Ideas? (Optional)</span>
                     </label>
                     <textarea
                       value={customPrompt}
                       onChange={(e) => setCustomPrompt(e.target.value)}
                       rows={3}
-                      placeholder="e.g. Outdoor sunset wedding reception in Matara, want lightweight movement with gold zari border, preferring full fitted sheer sleeves."
+                      placeholder="e.g. Outdoor evening party in Matara, want lightweight fabric, gold border, and long fitted sleeves."
                       className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
@@ -516,7 +535,7 @@ export default function AiRecommendationsPage() {
                     className="flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500 px-7 py-3 text-xs sm:text-sm font-bold text-black uppercase tracking-wider shadow-gold-md hover:scale-105 transition-all"
                   >
                     <Sparkles className="h-4 w-4 fill-black" />
-                    <span>Generate AI Recommendations</span>
+                    <span>Find My Best Dresses</span>
                   </button>
                 )}
               </div>
@@ -540,14 +559,14 @@ export default function AiRecommendationsPage() {
             </div>
 
             <h2 className="mt-8 font-cinzel text-2xl font-bold text-white tracking-wide">
-              Analyzing Silhouette Harmony...
+              Finding Your Best Dress Matches...
             </h2>
             <div className="mt-4 space-y-2 text-xs sm:text-sm text-zinc-400 font-light">
               <p className="text-amber-300 font-medium animate-pulse">
-                • Matching {activeProfile.bodyShape.label} frame with 6-meter gher patterns
+                • Checking dresses that flatter your {activeProfile.bodyShape.label} shape
               </p>
-              <p>• Harmonizing {activeProfile.undertone.label} palette with Italian Micro-Velvet & Raw Silk</p>
-              <p>• Applying Celoura bespoke master tailoring rules for {activeProfile.occasion.label}</p>
+              <p>• Matching colors with your {activeProfile.undertone.label}</p>
+              <p>• Applying tailor guidelines for your {activeProfile.occasion.label}</p>
             </div>
           </div>
         )}
@@ -566,10 +585,10 @@ export default function AiRecommendationsPage() {
                 </div>
                 <div>
                   <h3 className="font-cinzel text-sm sm:text-base font-bold text-white">
-                    Styling Blueprint Formulated
+                    Your Dress Recommendations Are Ready
                   </h3>
                   <p className="text-xs text-amber-300/80">
-                    Curated for {activeProfile.occasion.label} · {activeProfile.bodyShape.label} Frame · {activeProfile.undertone.label}
+                    Matched for {activeProfile.occasion.label} · {activeProfile.bodyShape.label} · {activeProfile.undertone.label}
                   </p>
                 </div>
               </div>
@@ -590,7 +609,7 @@ export default function AiRecommendationsPage() {
                   className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-3.5 py-1.5 text-xs text-amber-300 hover:bg-amber-500/20 transition-colors font-medium"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Adjust Preferences</span>
+                  <span>Change Answers</span>
                 </button>
               </div>
             </div>
@@ -638,7 +657,7 @@ export default function AiRecommendationsPage() {
                         className="flex items-center gap-1 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-amber-300 hover:bg-zinc-700"
                       >
                         <Eye className="h-3 w-3" />
-                        <span>Inspect</span>
+                        <span>Quick View</span>
                       </button>
                     </div>
                   </div>
@@ -651,7 +670,7 @@ export default function AiRecommendationsPage() {
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-300">
                       <Crown className="h-3 w-3 text-amber-400" />
-                      <span>Number One Haute Couture Recommendation</span>
+                      <span>Top Recommended Dress for You</span>
                     </div>
 
                     <h2 className="mt-3 font-cinzel text-2xl sm:text-4xl font-bold text-white tracking-wide">
@@ -671,7 +690,7 @@ export default function AiRecommendationsPage() {
                   <div className="rounded-2xl border border-amber-500/30 bg-zinc-950/70 p-5 backdrop-blur-sm">
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-300 mb-2">
                       <Sparkles className="h-4 w-4 text-amber-400" />
-                      <span>AI Stylist Verdict</span>
+                      <span>Why This Dress Fits You</span>
                     </div>
                     <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light">
                       {topPick.whyItMatches}
@@ -690,7 +709,7 @@ export default function AiRecommendationsPage() {
                             : "text-zinc-400 hover:text-white"
                         }`}
                       >
-                        Tailoring Blueprint
+                        Dress Cut & Details
                         {activeTab === "blueprint" && (
                           <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 shadow-gold-sm" />
                         )}
@@ -705,7 +724,7 @@ export default function AiRecommendationsPage() {
                             : "text-zinc-400 hover:text-white"
                         }`}
                       >
-                        Undertone Harmony
+                        Best Colors for You
                         {activeTab === "undertone" && (
                           <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 shadow-gold-sm" />
                         )}
@@ -720,7 +739,7 @@ export default function AiRecommendationsPage() {
                             : "text-zinc-400 hover:text-white"
                         }`}
                       >
-                        Haute Couture Styling
+                        Jewelry & Outfit Tips
                         {activeTab === "couture" && (
                           <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 shadow-gold-sm" />
                         )}
@@ -731,19 +750,19 @@ export default function AiRecommendationsPage() {
                     {activeTab === "blueprint" && (
                       <div className="mt-4 grid grid-cols-2 gap-3 text-xs animate-fadeIn">
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Recommended Neckline</span>
+                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Best Neckline</span>
                           <span className="text-white font-medium mt-0.5 block">{topPick.tailoringBlueprint.recommendedNeckline}</span>
                         </div>
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Recommended Sleeve</span>
+                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Best Sleeve Length</span>
                           <span className="text-white font-medium mt-0.5 block">{topPick.tailoringBlueprint.recommendedSleeve}</span>
                         </div>
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Architectural Silhouette</span>
+                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Dress Cut & Shape</span>
                           <span className="text-white font-medium mt-0.5 block">{topPick.tailoringBlueprint.silhouette}</span>
                         </div>
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Master Tailoring Detail</span>
+                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Embroidery & Detail</span>
                           <span className="text-white font-medium mt-0.5 block">{topPick.embroidery}</span>
                         </div>
                       </div>
@@ -753,13 +772,13 @@ export default function AiRecommendationsPage() {
                     {activeTab === "undertone" && (
                       <div className="mt-4 space-y-3 text-xs animate-fadeIn">
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-amber-300 font-semibold block text-[11px]">Complementary Undertone Palette</span>
+                          <span className="text-amber-300 font-semibold block text-[11px]">Colors That Match Your Skin</span>
                           <p className="mt-1 text-zinc-300 leading-relaxed font-light">
-                            {activeProfile.undertone.desc}. This dress in {topPick.color} will catch warm light fixtures and ambient candlelight for maximum radiance.
+                            {activeProfile.undertone.desc}. This dress in {topPick.color} will make your skin look bright and glowing under party lights.
                           </p>
                         </div>
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-amber-300 font-semibold block text-[11px]">Recommended Makeup Palette</span>
+                          <span className="text-amber-300 font-semibold block text-[11px]">Makeup Tips</span>
                           <p className="mt-1 text-zinc-300 leading-relaxed font-light">
                             {topPick.hauteCoutureStyling.makeup}
                           </p>
@@ -771,13 +790,13 @@ export default function AiRecommendationsPage() {
                     {activeTab === "couture" && (
                       <div className="mt-4 space-y-3 text-xs animate-fadeIn">
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-amber-300 font-semibold block text-[11px]">Jewelry & Accents</span>
+                          <span className="text-amber-300 font-semibold block text-[11px]">Jewelry & Accessories</span>
                           <p className="mt-1 text-zinc-300 leading-relaxed font-light">
                             {topPick.hauteCoutureStyling.jewelry}
                           </p>
                         </div>
                         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
-                          <span className="text-amber-300 font-semibold block text-[11px]">Dupatta & Draping Strategy</span>
+                          <span className="text-amber-300 font-semibold block text-[11px]">Shawl & Scarf Draping</span>
                           <p className="mt-1 text-zinc-300 leading-relaxed font-light">
                             {topPick.hauteCoutureStyling.dupattaDrape}
                           </p>
@@ -805,7 +824,7 @@ export default function AiRecommendationsPage() {
                       className="flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-5 py-3.5 text-xs sm:text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                     >
                       <MessageCircle className="h-4 w-4 text-emerald-400" />
-                      <span className="hidden sm:inline">Discuss with Master Tailor</span>
+                      <span className="hidden sm:inline">Chat with Tailor on WhatsApp</span>
                       <span className="sm:hidden">WhatsApp</span>
                     </a>
                   </div>
@@ -822,10 +841,10 @@ export default function AiRecommendationsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-cinzel text-xl sm:text-2xl font-bold text-white">
-                      Alternative Haute Couture Options
+                      Other Great Dress Options for You
                     </h3>
                     <p className="text-xs text-zinc-400">
-                      Additional silhouettes scored high by the AI for your occasion and body profile
+                      More dresses that match your event, body shape, and preferred colors
                     </p>
                   </div>
                 </div>
@@ -897,10 +916,10 @@ export default function AiRecommendationsPage() {
                 <div>
                   <h4 className="font-cinzel text-lg font-bold text-white flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-amber-400" />
-                    <span>Have a specific bespoke modification in mind?</span>
+                    <span>Want to change anything on this dress?</span>
                   </h4>
                   <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-                    Every design recommended by Celoura can be customized with alternate fabrics, sleeve styles, necklines, can-can volume, and embroidery densities.
+                    You can customize every dress with your favorite fabric, neckline, sleeves, skirt flare, or colors.
                   </p>
                 </div>
 
@@ -915,7 +934,7 @@ export default function AiRecommendationsPage() {
                     onClick={handleResetQuiz}
                     className="rounded-full btn-gold px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black shadow-gold-sm hover:scale-105 transition-all"
                   >
-                    Re-Run Stylist
+                    Start Quiz Over
                   </button>
                 </div>
               </div>
@@ -966,7 +985,7 @@ export default function AiRecommendationsPage() {
                       href={previewModalDesign.orderUrl || `/order?design=${previewModalDesign.id}`}
                       className="block w-full rounded-xl btn-gold py-2.5 text-center text-xs font-bold text-black uppercase tracking-wider"
                     >
-                      Proceed to Custom Order
+                      Customize & Order This Look
                     </Link>
                   </div>
                 </div>

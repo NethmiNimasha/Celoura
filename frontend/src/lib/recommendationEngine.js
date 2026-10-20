@@ -1,45 +1,45 @@
 // Celoura Fashion - Advanced AI Fashion Stylist & Recommendation Engine
 // Intelligent algorithmic scoring based on occasion, body silhouette, skin undertone, fabric, and budget
 
-import { INITIAL_DESIGNS, getSavedDesigns } from "./celouraData";
+import { getSavedDesigns } from "./celouraData";
 
 export const STYLIST_OCCASIONS = [
   {
     id: "bridal-wedding",
     label: "Bridal & Wedding",
-    desc: "Heirloom royal lehengas, heavy handwork, and show-stopping bridal majesty",
+    desc: "Royal wedding lehengas with rich handmade embroidery for your big day",
     recommendedCategories: ["Bridal Lehengas", "Saree Blouses"],
     vibeKeywords: ["royal", "heirloom", "zardozi", "dabka", "bridal", "opulence", "flared"],
     accentColor: "from-amber-500/20 to-yellow-600/10",
   },
   {
     id: "reception-gala",
-    label: "Grand Reception & Gala",
-    desc: "Sophisticated red-carpet glamour, crystal shimmer, and dramatic flairs",
+    label: "Evening Reception & Gala",
+    desc: "Glamorous evening gowns and dresses that shine under party lights",
     recommendedCategories: ["Bridal Lehengas", "Frocks & Gowns", "Couture Blouses"],
     vibeKeywords: ["evening", "gala", "crystals", "velvet", "trail", "corset", "satin"],
     accentColor: "from-purple-500/20 to-amber-600/10",
   },
   {
     id: "sangeet-cocktail",
-    label: "Sangeet, Mehendi & Cocktail",
-    desc: "Fluid twirl-friendly silhouettes, ethereal organza, and modern vibrant chic",
+    label: "Sangeet, Mehendi & Party",
+    desc: "Lightweight, twirl-ready skirts and frocks that are easy to dance in",
     recommendedCategories: ["Designer Skirts", "Frocks & Gowns", "Bridal Lehengas", "Couture Blouses"],
     vibeKeywords: ["organza", "twirl", "ruffle", "movement", "contemporary", "fusion"],
     accentColor: "from-rose-500/20 to-amber-500/10",
   },
   {
     id: "festive-cultural",
-    label: "Festive & Cultural Ceremonies",
-    desc: "Traditional elegance, pure Banarasi brocades, and classic Aari embroidery",
+    label: "Festivals & Traditional Events",
+    desc: "Classic Sri Lankan sarees, skirts, and pure Banarasi brocade",
     recommendedCategories: ["Saree Blouses", "Designer Skirts", "Bridal Lehengas"],
     vibeKeywords: ["brocade", "banarasi", "aari", "traditional", "heritage", "paisley"],
     accentColor: "from-emerald-500/20 to-amber-500/10",
   },
   {
     id: "intimate-party",
-    label: "Bespoke Party & Evening Outing",
-    desc: "Understated luxury, contemporary corset tops, and bespoke tailored frocks",
+    label: "Party & Dinner Outing",
+    desc: "Modern fitted tops, party frocks, and stylish evening skirts",
     recommendedCategories: ["Frocks & Gowns", "Couture Blouses", "Designer Skirts"],
     vibeKeywords: ["party", "corset", "peplum", "velvet", "flared", "sleek"],
     accentColor: "from-blue-500/20 to-amber-500/10",
@@ -49,46 +49,46 @@ export const STYLIST_OCCASIONS = [
 export const BODY_SHAPES = [
   {
     id: "hourglass",
-    label: "Hourglass",
-    tagline: "Balanced bust and hips with defined waist",
+    label: "Hourglass (Curvy)",
+    tagline: "Balanced bust and hips with a defined waist",
     silhouetteMatch: ["Structured Sweetheart", "Boned Corset", "Circular Flared (6-Meter Gher)", "Princess Cut"],
-    stylingTip: "Accentuate your natural waistline with structured cholis, sweetheart cutouts, and high-waisted flared skirts that drape gracefully.",
+    stylingTip: "Highlights your waist with fitted tops and flowing flared skirts.",
     preferredNeckline: "Sweetheart Neck or Corset Plunge",
     preferredSleeve: "Elbow Length with Zari Border",
   },
   {
     id: "pear",
-    label: "Pear / Triangle",
-    tagline: "Slender shoulders & bust with fuller hips",
+    label: "Pear (Fuller Hips)",
+    tagline: "Slender shoulders and fuller hips",
     silhouetteMatch: ["Heavy A-Line Flare with Triple Can-Can", "Circular Flared (6-Meter Gher)", "Floor Length Flared Gown Frock"],
-    stylingTip: "Balance your lower body volume with heavily embellished blouses, statement sleeves, boat necklines, and dramatic A-line can-can skirts.",
+    stylingTip: "Balances your look with detailed blouses and flared A-line skirts.",
     preferredNeckline: "Boat Neck or Queen Anne Royal Neck",
     preferredSleeve: "Full Embellished Sleeve or Sheer Puff Sleeve",
   },
   {
     id: "apple",
-    label: "Apple / Round",
-    tagline: "Fuller midsection with slender arms & legs",
+    label: "Apple (Fuller Midsection)",
+    tagline: "Fuller middle with slender arms and legs",
     silhouetteMatch: ["A-Line Flared Frock with Gilded Belt", "Floor Length Flared Gown Frock", "Flared Trail Skirt with Structured Waist"],
-    stylingTip: "Lengthen your silhouette with vertical bullion embroidery, plunging V-necks, flowing micro-velvet, and imperial high-waisted flared cuts.",
+    stylingTip: "Lengthens your look with deep V-necks and flowing floor-length skirts.",
     preferredNeckline: "Deep V-Plunge or Sweetheart Plunge",
     preferredSleeve: "Full Fitted Sleeve with Zari Cuff",
   },
   {
     id: "athletic",
-    label: "Athletic / Rectangle",
-    tagline: "Uniform proportions with subtle curves",
+    label: "Straight / Athletic",
+    tagline: "Even proportions from shoulders to hips",
     silhouetteMatch: ["Boned Corset Bodice with Peplum Flare", "Tiered Ruffle Silhouette", "Paneled Fluted Mermaid", "Circular Flared"],
-    stylingTip: "Create visual dimension and feminine curves with peplum flares, boned corsets, ruffled organza volume, and scalloped waistlines.",
+    stylingTip: "Adds curves with peplum flares, ruffled skirts, and corset tops.",
     preferredNeckline: "Corset Structured Choli or Halter Neck",
     preferredSleeve: "Sheer Puff Sleeve or Flared Bell Sleeve",
   },
   {
     id: "petite",
     label: "Petite Frame",
-    tagline: "Compact proportions seeking height elongation",
+    tagline: "Compact frame looking to add height",
     silhouetteMatch: ["Circular Flared Skirt (5-Meter Gher)", "Structured Sweetheart Saree Blouse with Dori", "A-Line Flared Frock"],
-    stylingTip: "Opt for monochromatic palettes, high-waisted skirts, elongated vertical embroidery lines, and avoid overly heavy border breaks.",
+    stylingTip: "Makes you look taller with high-waisted skirts and long vertical embroidery.",
     preferredNeckline: "Scoop Sweetheart or High Neck with Keyhole",
     preferredSleeve: "Elbow Length or Cap Sleeve",
   },
@@ -97,61 +97,61 @@ export const BODY_SHAPES = [
 export const UNDERTONES = [
   {
     id: "warm",
-    label: "Warm Golden / Olive",
-    desc: "Golden, peachy, or olive undertones with gold jewelry affinity",
+    label: "Warm Golden / Olive Skin",
+    desc: "Looks best with gold jewelry, emerald green, warm gold, and rich red",
     recommendedColors: ["Imperial Gold", "Obsidian Black & 24K Gold", "Deep Emerald & Gold", "Crimson Velvet", "Banarasi Gold"],
-    recommendedJewelry: "Antique 22K/24K Gold, Polki with emerald accents, or heirloom temple jewellery.",
-    makeupRecommendation: "Warm bronzed contour, gilded champagne highlighter, and rich terra-cotta or berry lips.",
+    recommendedJewelry: "Antique 22K/24K Gold or Polki jewelry with emerald stones.",
+    makeupRecommendation: "Warm bronzed skin, golden highlighter, and warm berry or red lips.",
   },
   {
     id: "cool",
-    label: "Cool Undertone / Rose",
-    desc: "Pink, blue, or cool undertones that radiate with silver and rich jewel tones",
+    label: "Cool / Rosy Skin",
+    desc: "Looks best with silver jewelry, deep wine red, peacock blue, and black",
     recommendedColors: ["Midnight Peacock", "Wine Burgundy & Antique Gold", "Royal Plum", "Obsidian Black", "Champagne Silver"],
-    recommendedJewelry: "Antique blackened gold, diamonds, Swarovski crystal accents, or uncut polki with ruby drops.",
-    makeupRecommendation: "Smokey eyes with charcoal accents, cool berry blush, and wine or deep ruby red lips.",
+    recommendedJewelry: "Silver, white gold, diamonds, or uncut polki with ruby drops.",
+    makeupRecommendation: "Smokey eyes with soft blush and deep wine or ruby red lips.",
   },
   {
     id: "neutral",
-    label: "Neutral / Balanced",
-    desc: "Balanced undertones flattered by both metallic warmth and rich darks",
+    label: "Neutral Skin Tone",
+    desc: "Looks great in both gold and silver, champagne ivory, and rose gold",
     recommendedColors: ["Champagne Gold & Ivory", "Rose Gold Hue", "Obsidian Black & Imperial Gold", "Italian Micro-Velvet"],
-    recommendedJewelry: "Kundan set in dual-tone gold, pearls, or rose-gold filigree.",
-    makeupRecommendation: "Soft nude glam, dewy luminous skin, champagne eyelids, and soft mauve lips.",
+    recommendedJewelry: "Kundan, pearls, or rose-gold jewelry.",
+    makeupRecommendation: "Soft glowing nude makeup with champagne shimmer.",
   },
   {
     id: "bold-dramatic",
-    label: "Dramatic Contrast",
-    desc: "Craving high-contrast impact, midnight hues, and glittering gold bullion",
+    label: "Bold Black & Gold",
+    desc: "High-contrast look: deep black fabric with shining 24K gold embroidery",
     recommendedColors: ["Obsidian Black & 24K Gold", "Jet Black with Fine Gold Resham", "Midnight Black & Matte Champagne"],
-    recommendedJewelry: "High-contrast antique matte gold chokers, chunky statement hathphool, and matching maang tikka.",
-    makeupRecommendation: "Defined winged eyeliner, gilded inner corner highlight, and bold velvet lips.",
+    recommendedJewelry: "Chunky antique gold necklaces and statement bracelets.",
+    makeupRecommendation: "Bold eyeliner, glowing gold accents, and deep velvet lips.",
   },
 ];
 
 export const EMBELLISHMENT_PREFERENCES = [
   {
     id: "heirloom-zardozi",
-    label: "Royal Heirloom Handwork",
-    desc: "Antique Zardozi, Dabka bullion wire, and rich Aari threadwork",
+    label: "Handmade Gold Embroidery",
+    desc: "Traditional heavy gold wire and thread work (Zardozi & Aari)",
     keywords: ["zardozi", "dabka", "aari", "bullion", "heirloom", "dense"],
   },
   {
     id: "crystal-glam",
-    label: "Swarovski Crystals & Modern Glam",
-    desc: "Sparkling crystal beadwork, cut-dana, and glistening sequins",
+    label: "Sparkling Crystals & Beads",
+    desc: "Shining crystals, sparkling beadwork, and modern sequins",
     keywords: ["swarovski", "crystal", "cut-dana", "beaded", "sequin", "shimmer"],
   },
   {
     id: "woven-brocade",
-    label: "Heirloom Woven Brocade & Silk",
-    desc: "Banarasi floral borders, zari weaves, and lustrous pure silks",
+    label: "Pure Silk & Brocade",
+    desc: "Traditional Banarasi woven patterns and rich smooth raw silk",
     keywords: ["banarasi", "brocade", "woven", "raw silk", "jacquard", "pure silk"],
   },
   {
     id: "ethereal-minimalist",
-    label: "Ethereal & Lightweight Flow",
-    desc: "Airy organza, delicate scalloped borders, and refined minimalist accents",
+    label: "Lightweight & Simple",
+    desc: "Light organza fabric with clean lines and subtle gold borders",
     keywords: ["organza", "sheer", "scalloped", "minimal", "lightweight", "foil"],
   },
 ];
@@ -176,8 +176,11 @@ export function getFashionRecommendations({
   embellishmentId = "heirloom-zardozi",
   budgetId = "any",
   freeQuery = "",
+  designsList = null,
 } = {}) {
-  const allDesigns = typeof window !== "undefined" ? getSavedDesigns() : INITIAL_DESIGNS;
+  const allDesigns = Array.isArray(designsList) && designsList.length > 0
+    ? designsList
+    : (typeof window !== "undefined" ? getSavedDesigns() : []);
 
   const occasion = STYLIST_OCCASIONS.find((o) => o.id === occasionId) || STYLIST_OCCASIONS[0];
   const bodyShape = BODY_SHAPES.find((b) => b.id === bodyShapeId) || BODY_SHAPES[0];
@@ -309,9 +312,9 @@ export function getFashionRecommendations({
       makeup: undertone.makeupRecommendation,
       silhouetteTip: bodyShape.stylingTip,
       dupattaDrape: occasion.id === "bridal-wedding" 
-        ? "Dual-dupatta royal draping: heavy velvet pleated across one shoulder with sheer gold tissue veil over head."
-        : "Contemporary single-shoulder pleated drape pinned with heirloom Celoura brooch.",
-      footwear: "Embroidered velvet juttis or metallic gold block heels for comfortable all-evening elegance.",
+        ? "Wear your shawl draped over one shoulder with a matching sheer gold veil over your head."
+        : "Drape neatly over one shoulder and pin with a sparkling gold brooch.",
+      footwear: "Comfortable gold heels or embroidered flats so you can dance and walk easily all evening.",
     };
 
     // Pre-calculated order query params for 1-click seamless ordering
@@ -323,7 +326,7 @@ export function getFashionRecommendations({
       silhouette: tailoringBlueprint.silhouette,
       neckline: tailoringBlueprint.recommendedNeckline,
       sleeve: tailoringBlueprint.recommendedSleeve,
-      stylistNotes: `AI Stylist Recommendation (${matchPercentage}% Match for ${occasion.label}): Styled for ${bodyShape.label} frame and ${undertone.label} undertone. Tailoring focus: ${bodyShape.preferredNeckline} with ${bodyShape.preferredSleeve}.`,
+      stylistNotes: `Suggested by AI Stylist (${matchPercentage}% Match for ${occasion.label}): Styled for ${bodyShape.label} and ${undertone.label}. Recommended cut: ${bodyShape.preferredNeckline} with ${bodyShape.preferredSleeve}.`,
       source: "ai-stylist",
     }).toString();
 
@@ -359,16 +362,16 @@ export function getFashionRecommendations({
  */
 function generatePersonalizedStylistNotes({ design, occasion, bodyShape, undertone, embellishment }) {
   const occasionPhrases = {
-    "bridal-wedding": `Selected as your premier bridal centerpiece for unmatched ceremonial majesty.`,
-    "reception-gala": `Curated for grand evening entry, casting an aura of royal red-carpet sophistication.`,
-    "sangeet-cocktail": `Ideal for festive movement and dancing, providing graceful fluid flare with high visual impact.`,
-    "festive-cultural": `Embodying Sri Lankan cultural grandeur with timeless heirloom threadwork.`,
-    "intimate-party": `The definitive modern luxury statement, balancing chic structure with artisanal detailing.`,
+    "bridal-wedding": `Great pick for your wedding day! It gives you a royal, unforgettable bridal look.`,
+    "reception-gala": `Perfect for an evening reception or gala, giving you a stunning red-carpet look.`,
+    "sangeet-cocktail": `Ideal for party and dancing—lightweight, easy to move in, and looks great twirling.`,
+    "festive-cultural": `A wonderful traditional choice with authentic handmade Sri Lankan details.`,
+    "intimate-party": `A chic, modern choice that looks elegant and stylish for any evening out.`,
   };
 
-  const bodyNotes = `The ${design.silhouette || "structured flare"} is architecturally chosen for your ${bodyShape.label} frame: it balances proportions by drawing focus to ${bodyShape.stylingTip.toLowerCase()}`;
-  const colorNotes = `The rich ${design.color} harmonizes seamlessly with your ${undertone.label} undertone, reflecting warmth under venue lighting.`;
-  const embroideryNotes = `Embellished with ${design.embroidery}, tailored strictly to Celoura's bespoke master standards.`;
+  const bodyNotes = `The ${design.silhouette || "flared cut"} fits your ${bodyShape.label} shape beautifully because it ${bodyShape.stylingTip.toLowerCase()}`;
+  const colorNotes = `The ${design.color} colors match your ${undertone.label} skin tone so you look glowing in photos.`;
+  const embroideryNotes = `Finished with ${design.embroidery}, hand-sewn by our tailors to fit your exact measurements.`;
 
   return `${occasionPhrases[occasion.id] || ""} ${bodyNotes} ${colorNotes} ${embroideryNotes}`;
 }

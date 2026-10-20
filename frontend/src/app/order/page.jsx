@@ -28,12 +28,12 @@ import {
   ImageIcon
 } from "lucide-react";
 import { 
-  INITIAL_DESIGNS, 
   getSavedDesigns,
+  saveDesigns,
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getStoredUser, createOrderApi } from "../../lib/api";
+import { getStoredUser, createOrderApi, getAllDesignsApi } from "../../lib/api";
 
 const COLOR_PALETTES = [
   { name: "Obsidian Black", hex: "#0a0a0c", border: "#d4af37", text: "text-amber-300" },
@@ -109,6 +109,8 @@ function OrderFormContent() {
   // Form State
   const [garmentType, setGarmentType] = useState("Frocks & Gowns");
   const [designSelectionMode, setDesignSelectionMode] = useState("catalogue"); // "catalogue" | "custom"
+  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+  const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [customDesignTitle, setCustomDesignTitle] = useState("");
   const [customDesignImage, setCustomDesignImage] = useState(null); // Data URL Base64 preview
@@ -208,7 +210,7 @@ function OrderFormContent() {
     setCustomDesignImageName("");
     setReferenceFile(null);
     if (selectedDesign?.isCustomUpload) {
-      const matching = INITIAL_DESIGNS.find((d) => d.category === garmentType);
+      const matching = designs.find((d) => d.category === garmentType);
       if (matching) {
         setSelectedDesign(matching);
         setCustomDesignTitle(matching.title);
@@ -249,17 +251,59 @@ function OrderFormContent() {
       }
     }
 
-    const allDesigns = typeof window !== "undefined" ? getSavedDesigns() : INITIAL_DESIGNS;
-    if (preselectedDesignId) {
-      const found = allDesigns.find((d) => d.id === preselectedDesignId) || INITIAL_DESIGNS.find((d) => d.id === preselectedDesignId);
-      if (found) {
-        setSelectedDesign(found);
-        setCustomDesignTitle(found.title);
-        if (found.category) setGarmentType(found.category);
-        if (found.silhouette) setSilhouette(found.silhouette);
-        setDesignSelectionMode("catalogue");
+    // Load initial cached designs if available
+    const cached = getSavedDesigns();
+    if (cached.length > 0) {
+      setDesigns(cached);
+      if (preselectedDesignId) {
+        const found = cached.find((d) => d.id === preselectedDesignId);
+        if (found) {
+          setSelectedDesign(found);
+          setCustomDesignTitle(found.title);
+          if (found.category) setGarmentType(found.category);
+          if (found.silhouette) setSilhouette(found.silhouette);
+          setDesignSelectionMode("catalogue");
+        }
       }
     }
+
+    // Fetch live designs dynamically from backend PostgreSQL database
+    getAllDesignsApi()
+      .then((remoteDesigns) => {
+        if (Array.isArray(remoteDesigns)) {
+          setDesigns(remoteDesigns);
+          saveDesigns(remoteDesigns);
+
+          if (preselectedDesignId) {
+            const found = remoteDesigns.find((d) => d.id === preselectedDesignId);
+            if (found) {
+              setSelectedDesign(found);
+              setCustomDesignTitle(found.title);
+              if (found.category) setGarmentType(found.category);
+              if (found.silhouette) setSilhouette(found.silhouette);
+              setDesignSelectionMode("catalogue");
+            }
+          } else {
+            setSelectedDesign((current) => {
+              if (current) return current;
+              const targetCat = preselectedCategory || garmentType;
+              const matching = remoteDesigns.find((d) => d.category === targetCat);
+              if (matching) {
+                setCustomDesignTitle(matching.title);
+                if (matching.silhouette) setSilhouette(matching.silhouette);
+                return matching;
+              }
+              return null;
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend designs, using saved fallback:", err);
+      })
+      .finally(() => {
+        setLoadingDesigns(false);
+      });
 
     if (preselectedCategory) setGarmentType(preselectedCategory);
     if (preselectedSilhouette) setSilhouette(preselectedSilhouette);
@@ -535,7 +579,7 @@ function OrderFormContent() {
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 block">
-                  Celoura Haute Couture AI Consultation
+                  Celoura AI Style Helper
                 </span>
                 <h3 className="font-cinzel text-base sm:text-lg font-bold text-white">
                   Design Suggested by AI Stylist
@@ -544,7 +588,7 @@ function OrderFormContent() {
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 border border-amber-400/50 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-gold-sm">
               <Check className="h-3.5 w-3.5 stroke-[3]" />
-              <span>Loaded as Active Foundation</span>
+              <span>Selected for Your Custom Order</span>
             </span>
           </div>
 
@@ -574,7 +618,7 @@ function OrderFormContent() {
                   </h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-zinc-400 block">Base Investment</span>
+                  <span className="text-xs text-zinc-400 block">Starting Price</span>
                   <span className="font-cinzel text-amber-300 text-base sm:text-lg font-bold">
                     {selectedDesign?.priceFormatted || (selectedDesign ? `LKR ${selectedDesign.price?.toLocaleString()}` : "")}
                   </span>
@@ -607,7 +651,7 @@ function OrderFormContent() {
               </div>
 
               <p className="text-[11px] text-zinc-400 italic pt-1">
-                *The design above was chosen by the AI Stylist to flatter your frame. You can fine-tune any element below or proceed directly to measurements.
+                *This dress was chosen by the AI Stylist to fit your body shape best. You can change any fabric, color, or neckline below, or proceed straight to measurements.
               </p>
             </div>
           </div>
@@ -687,11 +731,14 @@ function OrderFormContent() {
                     type="button"
                     onClick={() => {
                       setGarmentType(gt.id);
-                      const matching = INITIAL_DESIGNS.find((d) => d.category === gt.id);
+                      const matching = designs.find((d) => d.category === gt.id);
                       if (matching) {
                         setSelectedDesign(matching);
                         setCustomDesignTitle(matching.title);
                         if (matching.silhouette) setSilhouette(matching.silhouette);
+                      } else {
+                        setSelectedDesign(null);
+                        setCustomDesignTitle("");
                       }
                     }}
                     className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
@@ -780,13 +827,12 @@ function OrderFormContent() {
                 </div>
               )}
 
-              {/* Design Cards Grid: Catalogue items + Custom Upload Card */}
+              {/* Design Cards Grid: Live database designs */}
               <div className="grid sm:grid-cols-3 gap-4">
-                {(typeof window !== "undefined" ? getSavedDesigns() : INITIAL_DESIGNS)
+                {designs
                   .filter((d) => d.category === garmentType)
                   .map((d) => {
                     const isSelected = selectedDesign?.id === d.id && !customDesignImage;
-                    const isAiSuggestedThis = isAiStylistSource && selectedDesign?.id === d.id;
                     return (
                       <div
                         key={d.id}
@@ -802,12 +848,6 @@ function OrderFormContent() {
                             : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-600"
                         }`}
                       >
-                        {isAiSuggestedThis && (
-                          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-amber-400 text-black px-2 py-0.5 text-[10px] font-extrabold shadow-md">
-                            <Sparkles className="h-3 w-3 fill-black" />
-                            <span>SUGGESTED BY AI</span>
-                          </div>
-                        )}
                         <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden mb-2">
                           <Image src={d.image} alt={d.title} fill className="object-cover" />
                         </div>
@@ -815,11 +855,17 @@ function OrderFormContent() {
                           <p className="text-xs font-bold text-white truncate">{d.title}</p>
                           {isSelected && <Check className="h-3.5 w-3.5 text-amber-400 shrink-0 stroke-[3]" />}
                         </div>
-                        <p className="text-[11px] text-amber-400 font-semibold mt-0.5">{d.priceFormatted}</p>
+                        <p className="text-[11px] text-amber-400 font-semibold mt-0.5">{d.priceFormatted || `LKR ${d.price?.toLocaleString()}`}</p>
                       </div>
                     );
                   })}
               </div>
+
+              {designs.filter((d) => d.category === garmentType).length === 0 && !loadingDesigns && (
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 text-center text-xs text-zinc-400">
+                  No catalogue designs in this category yet. You can upload your own custom photo or sketch below.
+                </div>
+              )}
 
               {/* Hidden file input */}
               <input

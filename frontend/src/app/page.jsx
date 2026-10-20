@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -19,7 +19,8 @@ import {
   Check,
   Crown
 } from "lucide-react";
-import { BUSINESS_INFO, INITIAL_DESIGNS, GARMENT_TYPES } from "../lib/celouraData";
+import { BUSINESS_INFO, getSavedDesigns, saveDesigns, GARMENT_TYPES } from "../lib/celouraData";
+import { getAllDesignsApi } from "../lib/api";
 
 const CATEGORIES = [
   {
@@ -57,9 +58,26 @@ const CATEGORIES = [
 export default function HomePage() {
   const [selectedDesignModal, setSelectedDesignModal] = useState(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState("all");
+  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+
+  useEffect(() => {
+    const cached = getSavedDesigns();
+    if (cached.length > 0) setDesigns(cached);
+    getAllDesignsApi()
+      .then((remoteDesigns) => {
+        if (Array.isArray(remoteDesigns)) {
+          setDesigns(remoteDesigns);
+          saveDesigns(remoteDesigns);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend designs on homepage:", err);
+      });
+  }, []);
+
   const filteredDesigns = activeCategoryFilter === "all"
-    ? INITIAL_DESIGNS
-    : INITIAL_DESIGNS.filter((d) => d.category === activeCategoryFilter);
+    ? designs
+    : designs.filter((d) => d.category === activeCategoryFilter);
 
   return (
     <div className="relative overflow-hidden bg-[#060608] text-white">
@@ -203,7 +221,7 @@ export default function HomePage() {
             <div className="lg:col-span-7 space-y-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-amber-300">
                 <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-                <span>Advanced AI Fashion Recommendations</span>
+                <span>Celoura AI Style Helper</span>
               </div>
 
               <h2 className="font-cinzel text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
@@ -214,21 +232,21 @@ export default function HomePage() {
               </h2>
 
               <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light max-w-xl">
-                Every silhouette at Celoura is bespoke. In 6 short questions, our algorithmic styling engine analyzes your event, body frame, and skin undertone to formulate your custom tailoring blueprint.
+                Not sure which dress style fits you best? In 6 short questions, our AI helper finds the perfect dress, neckline, and colors for your event and body shape.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Occasion Match</span>
-                  <span className="text-zinc-400 text-[11px]">Bridal, Reception, Sangeet & Galas</span>
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">For Any Event</span>
+                  <span className="text-zinc-400 text-[11px]">Weddings, Parties & Celebrations</span>
                 </div>
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Anatomical Fit</span>
-                  <span className="text-zinc-400 text-[11px]">Hourglass, Pear, Apple, Petite</span>
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Fits Your Shape</span>
+                  <span className="text-zinc-400 text-[11px]">Flattering styles for every body type</span>
                 </div>
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Undertone Harmony</span>
-                  <span className="text-zinc-400 text-[11px]">Warm Gold, Jewel, Neutral Tones</span>
+                  <span className="font-cinzel font-bold text-amber-300 block mb-0.5">Best Colors</span>
+                  <span className="text-zinc-400 text-[11px]">Colors that make your skin glow</span>
                 </div>
               </div>
 
@@ -238,7 +256,7 @@ export default function HomePage() {
                   className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500 px-7 py-3 text-xs sm:text-sm font-bold text-black uppercase tracking-wider shadow-gold-md hover:scale-105 transition-all group"
                 >
                   <Sparkles className="h-4 w-4 fill-black" />
-                  <span>Launch AI Fashion Stylist</span>
+                  <span>Find My Perfect Dress</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
 
@@ -259,10 +277,10 @@ export default function HomePage() {
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 text-xs">
                   <div className="flex items-center gap-1.5 text-amber-300 font-bold">
                     <Crown className="h-3.5 w-3.5 text-amber-400" />
-                    <span>Haute Couture AI Pick</span>
+                    <span>Top AI Pick for You</span>
                   </div>
                   <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-300 border border-amber-400/40">
-                    98% Bespoke Match
+                    98% Fit Match
                   </span>
                 </div>
 
@@ -295,16 +313,16 @@ export default function HomePage() {
                 {/* Stylist Insights list */}
                 <div className="mt-4 space-y-1.5 pt-3 border-t border-zinc-800/80 text-[11px] text-zinc-300">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">Target Silhouette:</span>
-                    <span className="text-amber-200">6-Meter Circular Flare</span>
+                    <span className="text-zinc-500">Dress Cut:</span>
+                    <span className="text-amber-200">Full Flare Skirt</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">Recommended Neckline:</span>
-                    <span className="text-amber-200">Sweetheart Corset Plunge</span>
+                    <span className="text-zinc-500">Best Neckline:</span>
+                    <span className="text-amber-200">Sweetheart Neckline</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">Undertone Harmony:</span>
-                    <span className="text-amber-200">Warm Golden & Obsidian</span>
+                    <span className="text-zinc-500">Best Colors:</span>
+                    <span className="text-amber-200">Deep Maroon & 24K Gold</span>
                   </div>
                 </div>
 
@@ -313,7 +331,7 @@ export default function HomePage() {
                     href="/recommendations"
                     className="block w-full rounded-xl bg-amber-400/15 border border-amber-400/40 py-2 text-center text-xs font-bold text-amber-300 hover:bg-amber-400/25 transition-all"
                   >
-                    Take the 60-Sec Style Quiz →
+                    Find Your Dress in 60 Seconds →
                   </Link>
                 </div>
 
@@ -522,52 +540,70 @@ export default function HomePage() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
-          {filteredDesigns.slice(0, 10).map((item) => {
-            return (
-              <div
-                key={item.id}
-                onClick={() => setSelectedDesignModal(item)}
-                className="group flex flex-col justify-between rounded-xl border border-zinc-800/80 bg-[#0b0b10] p-2 sm:p-2.5 transition-all duration-300 hover:border-amber-500/40 hover:shadow-gold-sm cursor-pointer"
-              >
-                <div>
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-zinc-950">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
-                      className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                    />
-                    {/* Category Tag pill */}
-                    <span className="absolute top-2 left-2 rounded-md bg-black/80 px-2 py-0.5 text-[9px] font-medium text-amber-300 border border-amber-400/30 backdrop-blur-sm">
-                      {item.category}
+        {filteredDesigns.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+            {filteredDesigns.slice(0, 10).map((item) => {
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedDesignModal(item)}
+                  className="group flex flex-col justify-between rounded-xl border border-zinc-800/80 bg-[#0b0b10] p-2 sm:p-2.5 transition-all duration-300 hover:border-amber-500/40 hover:shadow-gold-sm cursor-pointer"
+                >
+                  <div>
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-zinc-950">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
+                        className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                      />
+                      {/* Category Tag pill */}
+                      <span className="absolute top-2 left-2 rounded-md bg-black/80 px-2 py-0.5 text-[9px] font-medium text-amber-300 border border-amber-400/30 backdrop-blur-sm">
+                        {item.category}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 px-1">
+                      <h3 className="font-cinzel text-xs sm:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                        {item.fabric}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 px-1 pt-1.5 flex items-center justify-between border-t border-zinc-800/60">
+                    <span className="font-sans text-xs font-semibold text-amber-300">
+                      {item.priceFormatted || `LKR ${item.price.toLocaleString()}`}
+                    </span>
+                    
+                    <span className="text-[10px] text-zinc-500 group-hover:text-amber-300 transition-colors flex items-center gap-0.5">
+                      View Details →
                     </span>
                   </div>
-
-                  <div className="mt-3 px-1">
-                    <h3 className="font-cinzel text-xs sm:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
-                      {item.fabric}
-                    </p>
-                  </div>
                 </div>
-
-                <div className="mt-2 px-1 pt-1.5 flex items-center justify-between border-t border-zinc-800/60">
-                  <span className="font-sans text-xs font-semibold text-amber-300">
-                    {item.priceFormatted || `LKR ${item.price.toLocaleString()}`}
-                  </span>
-                  
-                  <span className="text-[10px] text-zinc-500 group-hover:text-amber-300 transition-colors flex items-center gap-0.5">
-                    View Details →
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-800/80 bg-[#0b0b10] p-8 sm:p-12 text-center space-y-3">
+            <Sparkles className="h-7 w-7 text-amber-400/60 mx-auto" />
+            <h3 className="font-cinzel text-base font-bold text-white">No Designs in Featured Collection Yet</h3>
+            <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              Designs added via the Admin panel will appear here dynamically. You can create a new custom dress design order below.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/order"
+                className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-400/10 px-5 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-all"
+              >
+                Create Custom Design Order →
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* QUICK VIEW MODAL */}

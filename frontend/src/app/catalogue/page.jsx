@@ -17,20 +17,35 @@ import {
   Filter,
   ArrowUpDown
 } from "lucide-react";
-import { getSavedDesigns, INITIAL_DESIGNS } from "../../lib/celouraData";
+import { getSavedDesigns, saveDesigns } from "../../lib/celouraData";
+import { getAllDesignsApi } from "../../lib/api";
 
 function CatalogueContent() {
   const searchParams = useSearchParams();
   const initialCategoryParam = searchParams.get("category");
 
-  const [designs, setDesigns] = useState(INITIAL_DESIGNS);
+  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [activeModalDesign, setActiveModalDesign] = useState(null);
 
   useEffect(() => {
-    setDesigns(getSavedDesigns());
+    const cached = getSavedDesigns();
+    if (cached.length > 0) {
+      setDesigns(cached);
+    }
+    getAllDesignsApi()
+      .then((remoteDesigns) => {
+        if (Array.isArray(remoteDesigns)) {
+          setDesigns(remoteDesigns);
+          saveDesigns(remoteDesigns);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend designs for catalogue, using cached:", err);
+      });
+
     if (initialCategoryParam) {
       setSelectedCategory(initialCategoryParam);
     }
@@ -89,10 +104,10 @@ function CatalogueContent() {
           </div>
           <div>
             <h3 className="font-cinzel text-sm sm:text-base font-bold text-amber-200">
-              Not sure which silhouette suits your body frame or event?
+              Not sure which dress style fits you best?
             </h3>
             <p className="text-xs text-zinc-400">
-              Take our 60-second AI Fashion Stylist quiz to get personalized recommendations and custom tailoring blueprints.
+              Take our 60-second AI Style Quiz to find the best dresses, necklines, and colors for your body shape.
             </p>
           </div>
         </div>
@@ -100,7 +115,7 @@ function CatalogueContent() {
           href="/recommendations"
           className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-5 py-2 text-xs font-bold text-black uppercase tracking-wider shadow-gold-sm hover:scale-105 transition-all shrink-0"
         >
-          Consult AI Stylist →
+          Find My Dress →
         </Link>
       </div>
 

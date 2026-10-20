@@ -120,37 +120,17 @@ export default function AdminPage() {
         console.warn("Could not load backend orders for admin, using local fallback:", err);
       });
 
-    // Fetch live designs from Spring Boot Backend and auto-sync any pending local designs
+    // Fetch live designs from Spring Boot Backend
     getAllDesignsApi()
       .then((remoteDesigns) => {
-        if (Array.isArray(remoteDesigns) && remoteDesigns.length > 0) {
-          const localDesigns = getSavedDesigns();
-          const missingInRemote = localDesigns.filter(
-            (ld) => !remoteDesigns.some((rd) => rd.id === ld.id)
-          );
-
-          if (missingInRemote.length > 0) {
-            // Push any pending local designs (like CEL-DSG-44) directly to PostgreSQL
-            Promise.all(missingInRemote.map((d) => createDesignApi(d).catch(() => null)))
-              .then(() => {
-                getAllDesignsApi().then((refreshed) => {
-                  if (Array.isArray(refreshed) && refreshed.length > 0) {
-                    setDesigns(refreshed);
-                    saveDesigns(refreshed);
-                  }
-                });
-              });
-            const merged = [...missingInRemote, ...remoteDesigns];
-            setDesigns(merged);
-            saveDesigns(merged);
-          } else {
-            setDesigns(remoteDesigns);
-            saveDesigns(remoteDesigns);
-          }
+        if (Array.isArray(remoteDesigns)) {
+          setDesigns(remoteDesigns);
+          saveDesigns(remoteDesigns);
         }
       })
       .catch((err) => {
         console.warn("Could not load backend designs for admin, using local fallback:", err);
+        setDesigns(getSavedDesigns());
       });
   }, [router]);
 

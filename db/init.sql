@@ -100,85 +100,9 @@ VALUES
 ('Nethmi Nimasha', 'nethunanayakkara315@gmail.com', '0771699754', '$2a$10$9D8pJ8bZhCwx/UYcgQLig.wcFInYinG5/ICHgDOu5Mb7w5Nk144Ki', 'ROLE_CUSTOMER', CURRENT_TIMESTAMP)
 ON CONFLICT (email) DO NOTHING;
 
--- B. SEED DESIGNS (Frocks, Saree Blouses, Skirts, Couture Blouses, Bridal Lehengas)
-INSERT INTO public.designs (id, title, category, price, price_formatted, image, fabric, color, embroidery, silhouette, description, featured, customizable)
-VALUES
-(
-    'CEL-DSG-07',
-    'Aurelia Gold Velvet Evening Frock',
-    'Frocks & Gowns',
-    28000.00,
-    'LKR 28,000',
-    '/images/frock-evening.jpg',
-    'Italian Micro-Velvet & Zari',
-    'Obsidian Black & 24K Gold',
-    'Handcrafted Zari Florals & Gilded Belt Detailing',
-    'A-Line Flared Frock with Gilded Belt',
-    'A show-stopping tailored evening frock crafted with an A-line flounce skirt, hand-embroidered golden waistline belt, and intricate sleeve cuffs.',
-    true,
-    true
-),
-(
-    'CEL-DSG-08',
-    'Royal Aari Bridal Saree Blouse',
-    'Saree Blouses',
-    16500.00,
-    'LKR 16,500',
-    '/images/saree-blouse.jpg',
-    'Pure Raw Silk & Black Velvet',
-    'Deep Black Velvet & Antique Gold',
-    'Dense Aari Maggam Handwork, Paisley Sleeve & Scalloped Neck',
-    'Structured Sweetheart Saree Blouse with Dori',
-    'Handcrafted bridal saree blouse featuring heirloom aari and zardozi threadwork, structured sweetheart bustline, and custom dori tie-backs with latkan tassels.',
-    true,
-    true
-),
-(
-    'CEL-DSG-10',
-    'Noor Obsidian Flared Designer Skirt',
-    'Designer Skirts',
-    18500.00,
-    'LKR 18,500',
-    '/images/skirt-flare.jpg',
-    'Heavy Silk & Banarasi Brocade Border',
-    'Midnight Obsidian & Gold',
-    'Wide Antique Bullion Zari Border',
-    'Circular Flared Skirt (5-Meter Gher)',
-    'High-waisted flared maxi skirt with a 5-meter circle sweep and built-in can-can volume. Perfect for pairing with ethnic crop tops or contemporary blouses.',
-    true,
-    true
-),
-(
-    'CEL-DSG-12',
-    'Valerie Corset Peplum Couture Blouse',
-    'Couture Blouses',
-    14000.00,
-    'LKR 14,000',
-    '/images/blouse-designer.jpg',
-    'Structured Duchess Satin & Sheer Organza',
-    'Obsidian Black & Champagne Gold',
-    'Crystal Beaded Boning & Scalloped Sweetheart',
-    'Boned Corset Bodice with Peplum Flare',
-    'Bespoke boned corset blouse top with sheer puff sleeves and hand-embroidered gold filigree across the bustier.',
-    true,
-    true
-),
-(
-    'CEL-DSG-01',
-    'The Royal Empress Bridal Lehenga',
-    'Bridal Lehengas',
-    185000.00,
-    'LKR 185,000',
-    '/images/royal-bloom.jpg',
-    'Raw Silk & Zari Mesh',
-    'Obsidian Black & Imperial Gold',
-    'Handcrafted Antique Gold Zardozi & Dabka',
-    'Circular Flared (6-Meter Gher)',
-    'An awe-inspiring masterpiece crafted for the modern royal bride. Features multi-layered circular flare with hand-embellished peacock and floral motifs in 24K antique bullion thread.',
-    true,
-    true
-)
-ON CONFLICT (id) DO NOTHING;
+-- B. DESIGNS (Created dynamically via Admin Panel)
+-- No static seed designs inserted
+
 
 -- C. SEED SAMPLE ORDERS
 INSERT INTO public.orders (
