@@ -22,38 +22,6 @@ import {
 import { BUSINESS_INFO, getSavedDesigns, saveDesigns, GARMENT_TYPES } from "../lib/celouraData";
 import { getAllDesignsApi } from "../lib/api";
 
-const CATEGORIES = [
-  {
-    title: "Frocks & Gowns",
-    subtitle: "Tailored Evening & Party Frocks",
-    image: "/images/frock-evening.jpg",
-    href: "/catalogue?category=Frocks+%26+Gowns",
-  },
-  {
-    title: "Saree Blouses",
-    subtitle: "Handcrafted Aari & Zardozi Blouses",
-    image: "/images/saree-blouse.jpg",
-    href: "/catalogue?category=Saree+Blouses",
-  },
-  {
-    title: "Designer Skirts",
-    subtitle: "Flared Silk & Brocade Maxi Skirts",
-    image: "/images/skirt-flare.jpg",
-    href: "/catalogue?category=Designer+Skirts",
-  },
-  {
-    title: "Couture Blouses",
-    subtitle: "Corsets, Peplums & Crop Tops",
-    image: "/images/blouse-designer.jpg",
-    href: "/catalogue?category=Couture+Blouses",
-  },
-  {
-    title: "Bridal Lehengas",
-    subtitle: "Royal Gold & Velvet Ensembles",
-    image: "/images/royal-bloom.jpg",
-    href: "/catalogue?category=Bridal+Lehengas",
-  },
-];
 
 export default function HomePage() {
   const [selectedDesignModal, setSelectedDesignModal] = useState(null);
@@ -285,30 +253,52 @@ export default function HomePage() {
                 </div>
 
                 {/* Preview Mini Showcase */}
-                <div className="mt-4 flex gap-4 items-center">
-                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-amber-400/40">
-                    <Image
-                      src="/images/royal-bloom.jpg"
-                      alt="Top Recommendation"
-                      fill
-                      className="object-cover object-top"
-                    />
+                {designs.length > 0 ? (
+                  <div 
+                    onClick={() => setSelectedDesignModal(designs[0])}
+                    className="mt-4 flex gap-4 items-center cursor-pointer group"
+                  >
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-amber-400/40 bg-zinc-950">
+                      <Image
+                        src={designs[0].image}
+                        alt={designs[0].title}
+                        fill
+                        className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                        {designs[0].category}
+                      </span>
+                      <h3 className="font-cinzel text-sm font-bold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
+                        {designs[0].title}
+                      </h3>
+                      <p className="text-[11px] text-zinc-400 line-clamp-1">
+                        {designs[0].fabric || designs[0].silhouette}
+                      </p>
+                      <span className="text-xs font-bold text-amber-300 block">
+                        {designs[0].priceFormatted || `LKR ${Number(designs[0].price).toLocaleString()}`}
+                      </span>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
-                      Bridal Lehengas
-                    </span>
-                    <h3 className="font-cinzel text-sm font-bold text-white">
-                      The Royal Empress Bridal Lehenga
-                    </h3>
-                    <p className="text-[11px] text-zinc-400">
-                      Italian Micro-Velvet & 24K Gold Zari
-                    </p>
-                    <span className="text-xs font-bold text-amber-300 block">
-                      LKR 185,000
-                    </span>
+                ) : (
+                  <div className="mt-4 flex gap-4 items-center rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-3">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                        Bespoke Atelier Fit
+                      </span>
+                      <h3 className="font-cinzel text-sm font-bold text-white">
+                        AI-Crafted Custom Silhouettes
+                      </h3>
+                      <p className="text-[11px] text-zinc-400">
+                        Tailored to your body geometry, complexion & style
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Stylist Insights list */}
                 <div className="mt-4 space-y-1.5 pt-3 border-t border-zinc-800/80 text-[11px] text-zinc-300">
@@ -366,39 +356,65 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* 5 Categories Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
-          {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.title}
-              href={cat.href}
-              className="group relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950 transition-all duration-300 hover:border-amber-500/50 hover:shadow-gold-sm flex flex-col justify-end"
-            >
-              <Image
-                src={cat.image}
-                alt={cat.title}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
-                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-              />
-              {/* Bottom gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+        {/* Designs Grid (Dynamically added by Admin) */}
+        {designs.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+            {designs.slice(0, 5).map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setSelectedDesignModal(item)}
+                className="group relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950 transition-all duration-300 hover:border-amber-500/50 hover:shadow-gold-sm flex flex-col justify-end cursor-pointer"
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
+                  className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* Bottom gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
 
-              <div className="relative z-10 p-4">
-                <h3 className="font-cinzel text-base sm:text-lg font-bold text-white group-hover:text-amber-200 transition-colors">
-                  {cat.title}
-                </h3>
-                <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
-                  {cat.subtitle}
-                </p>
-                <div className="mt-2 flex items-center gap-1 text-[11px] text-amber-300/90 font-medium">
-                  <span>Shop Now</span>
-                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                <div className="relative z-10 p-4">
+                  <span className="text-[10px] uppercase font-bold text-amber-400 block mb-0.5 tracking-wider">
+                    {item.category}
+                  </span>
+                  <h3 className="font-cinzel text-base sm:text-lg font-bold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5 font-sans">
+                    {item.fabric || item.silhouette}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between text-xs">
+                    <span className="font-sans font-bold text-amber-300">
+                      {item.priceFormatted || `LKR ${Number(item.price).toLocaleString()}`}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 group-hover:text-amber-300 font-medium flex items-center gap-1">
+                      <span>View</span>
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
                 </div>
               </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-800/80 bg-[#0b0b10] p-8 sm:p-12 text-center space-y-3">
+            <Sparkles className="h-7 w-7 text-amber-400/60 mx-auto" />
+            <h3 className="font-cinzel text-base font-bold text-white">No Designs in Collection Yet</h3>
+            <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              Designs added by the administrator in the Admin Portal will appear here dynamically. You can create a new custom dress design order below.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/order"
+                className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-400/10 px-5 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-all"
+              >
+                Create Custom Design Order →
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 4. "CREATE YOUR OWN LOOK" - Custom Dress Order Banner */}
@@ -539,10 +555,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Product Cards Grid (Limited to 5 designs) */}
         {filteredDesigns.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
-            {filteredDesigns.slice(0, 10).map((item) => {
+            {filteredDesigns.slice(0, 5).map((item) => {
               return (
                 <div
                   key={item.id}

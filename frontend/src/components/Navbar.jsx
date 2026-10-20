@@ -157,18 +157,32 @@ export default function Navbar() {
                   Order
                 </Link>
 
-                <Link
-                  href="/profile"
-                  className={`flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all duration-300 ${
-                    pathname === "/profile"
-                      ? "border border-amber-400 bg-amber-400/20 text-amber-300 shadow-gold-sm ring-1 ring-amber-300/50"
-                      : "border border-amber-500/30 bg-zinc-900/80 text-zinc-300 hover:text-white hover:border-amber-400/60"
-                  }`}
-                >
-                  <User className="h-3.5 w-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">{currentUser.name ? currentUser.name.split(" ")[0] : "Profile"}</span>
-                  <span className="sm:hidden">Profile</span>
-                </Link>
+                {currentUser.role === "ROLE_ADMIN" || currentUser.email?.toLowerCase().includes("admin") ? (
+                  <Link
+                    href="/profile"
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all duration-300 ${
+                      pathname === "/profile" || pathname === "/admin"
+                        ? "border border-amber-400 bg-amber-400 text-black shadow-gold-sm ring-1 ring-amber-300/50"
+                        : "border border-amber-500/40 bg-zinc-900/90 text-amber-300 hover:text-white hover:border-amber-400/80 shadow-gold-sm"
+                    }`}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Admin Portal</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/profile"
+                    className={`flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all duration-300 ${
+                      pathname === "/profile"
+                        ? "border border-amber-400 bg-amber-400/20 text-amber-300 shadow-gold-sm ring-1 ring-amber-300/50"
+                        : "border border-amber-500/30 bg-zinc-900/80 text-zinc-300 hover:text-white hover:border-amber-400/60"
+                    }`}
+                  >
+                    <User className="h-3.5 w-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">{currentUser.name ? currentUser.name.split(" ")[0] : "Profile"}</span>
+                    <span className="sm:hidden">Profile</span>
+                  </Link>
+                )}
               </div>
             ) : (
               <Link
