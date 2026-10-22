@@ -84,6 +84,22 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 5. REVIEWS & RATINGS TABLE
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id BIGSERIAL PRIMARY KEY,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255),
+    design_id VARCHAR(255),
+    design_title VARCHAR(255),
+    rating INTEGER NOT NULL DEFAULT 5,
+    review_title VARCHAR(255),
+    comment VARCHAR(2000) NOT NULL,
+    garment_category VARCHAR(255),
+    location VARCHAR(255) DEFAULT 'Sri Lanka',
+    verified_purchase BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ==============================================================================
 -- SEED DATA INSERTION
 -- ==============================================================================

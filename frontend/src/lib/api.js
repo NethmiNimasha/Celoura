@@ -418,5 +418,108 @@ export async function deleteDesignApi(id) {
   }
 }
 
+/**
+ * ========================================================
+ * REVIEWS & RATINGS REST API (Spring Boot Backend -> /api/reviews)
+ * ========================================================
+ */
+
+/**
+ * Fetch all customer ratings & reviews
+ */
+export async function getAllReviewsApi() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to load reviews from backend.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("getAllReviewsApi failed, fallback to local:", err);
+    return null;
+  }
+}
+
+/**
+ * Fetch reviews for a specific design
+ */
+export async function getReviewsByDesignApi(designId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/design/${encodeURIComponent(designId)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to load design reviews.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("getReviewsByDesignApi failed:", err);
+    return [];
+  }
+}
+
+/**
+ * Fetch overall rating stats (average, counts, recommendation rate)
+ */
+export async function getReviewStatsApi() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/stats`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to load review stats.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("getReviewStatsApi failed:", err);
+    return null;
+  }
+}
+
+/**
+ * Submit a new customer rating & review
+ */
+export async function createReviewApi(reviewData) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reviewData),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to submit review.");
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("createReviewApi failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a review (Admin action)
+ */
+export async function deleteReviewApi(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      throw new Error("Failed to delete review.");
+    }
+    return true;
+  } catch (err) {
+    console.warn("deleteReviewApi failed:", err);
+    throw err;
+  }
+}
+
+
 
 

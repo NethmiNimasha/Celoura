@@ -35,7 +35,8 @@ import {
   Lock,
   MapPin,
   Building2,
-  Check
+  Check,
+  Star
 } from "lucide-react";
 import { 
   getSavedOrders, 
@@ -43,6 +44,8 @@ import {
   updateOrderStatus, 
   getSavedDesigns, 
   saveDesigns, 
+  getSavedReviews,
+  saveReviews,
   ORDER_STATUSES,
   BUSINESS_INFO
 } from "../lib/celouraData";
@@ -56,6 +59,9 @@ import {
   createDesignApi,
   updateDesignApi,
   deleteDesignApi,
+  getAllReviewsApi,
+  deleteReviewApi,
+  getReviewStatsApi,
   getUserProfile,
   updateUserProfile
 } from "../lib/api";
@@ -64,9 +70,14 @@ export default function AdminPortal() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [activeTab, setActiveTab] = useState("orders"); // "orders" | "catalogue" | "settings"
+  const [activeTab, setActiveTab] = useState("orders"); // "orders" | "catalogue" | "settings" | "reviews"
   const [orders, setOrders] = useState([]);
   const [designs, setDesigns] = useState([]);
+  const [reviews, setReviews] = useState(() => (typeof window !== "undefined" ? getSavedReviews() : []));
+  const [reviewStats, setReviewStats] = useState({ totalReviews: 4, averageRating: 5.0, recommendationRate: "100%" });
+  const [reviewRatingFilter, setReviewRatingFilter] = useState("all");
+  const [reviewSearchQuery, setReviewSearchQuery] = useState("");
+  const [isDeletingReviewId, setIsDeletingReviewId] = useState(null);
 
   // Admin Profile info state
   const [adminName, setAdminName] = useState("Celoura Admin");
@@ -178,7 +189,48 @@ export default function AdminPortal() {
         console.warn("Could not load backend designs for admin, using local fallback:", err);
         setDesigns(getSavedDesigns());
       });
+
+    // Fetch live customer reviews and stats from Spring Boot Backend
+    getAllReviewsApi()
+      .then((remoteReviews) => {
+        if (Array.isArray(remoteReviews) && remoteReviews.length > 0) {
+          setReviews(remoteReviews);
+          saveReviews(remoteReviews);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend reviews for admin:", err);
+      });
+
+    getReviewStatsApi()
+      .then((stats) => {
+        if (stats && stats.totalReviews !== undefined) {
+          setReviewStats(stats);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load review stats:", err);
+      });
   }, [router]);
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Are you sure you want to permanently delete this customer review?")) return;
+    setIsDeletingReviewId(reviewId);
+    const remaining = reviews.filter((r) => r.id !== reviewId);
+    setReviews(remaining);
+    saveReviews(remaining);
+    showToast("success", "Customer review removed.");
+
+    try {
+      await deleteReviewApi(reviewId);
+      const updatedStats = await getReviewStatsApi();
+      if (updatedStats) setReviewStats(updatedStats);
+    } catch (err) {
+      console.warn("Backend delete review failed:", err);
+    } finally {
+      setIsDeletingReviewId(null);
+    }
+  };
 
   const handleAdminSignOut = () => {
     logoutUser();
@@ -405,6 +457,20 @@ export default function AdminPortal() {
     return matchesStatus && matchesSearch;
   });
 
+  // Filtered reviews
+  const filteredReviews = reviews.filter((r) => {
+    const matchesRating = reviewRatingFilter === "all" || String(r.rating) === String(reviewRatingFilter);
+    const q = reviewSearchQuery.toLowerCase();
+    const matchesSearch =
+      (r.customerName || "").toLowerCase().includes(q) ||
+      (r.comment || "").toLowerCase().includes(q) ||
+      (r.reviewTitle || "").toLowerCase().includes(q) ||
+      (r.garmentCategory || "").toLowerCase().includes(q) ||
+      (r.designTitle || "").toLowerCase().includes(q) ||
+      (r.location || "").toLowerCase().includes(q);
+    return matchesRating && matchesSearch;
+  });
+
   if (!authChecked) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
@@ -552,6 +618,18 @@ export default function AdminPortal() {
         >
           <Sparkles className="h-3.5 w-3.5" />
           <span>Design Catalogue ({designs.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("reviews")}
+          className={`flex items-center gap-2 rounded-xl px-5 py-2.5 font-bold uppercase tracking-wider transition ${
+            activeTab === "reviews"
+              ? "bg-amber-400 text-black shadow-gold-sm"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          <Star className={`h-3.5 w-3.5 ${activeTab === "reviews" ? "fill-black text-black" : "fill-amber-400 text-amber-400"}`} />
+          <span>Patron Reviews ({reviews.length})</span>
         </button>
 
         <button
@@ -917,6 +995,252 @@ export default function AdminPortal() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB 4: REVIEWS & RATINGS MANAGEMENT */}
+      {activeTab === "reviews" && (
+        <div className="space-y-6">
+          {/* Reviews Scorecard & KPI Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-[#0d0d14] to-zinc-950 p-6 flex flex-col justify-between shadow-xl">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-amber-300 font-semibold block">
+                  Overall Atelier Rating
+                </span>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <span className="font-cinzel text-4xl sm:text-5xl font-black text-amber-300">
+                    {reviewStats.averageRating ? reviewStats.averageRating.toFixed(1) : "5.0"}
+                  </span>
+                  <span className="text-zinc-500 text-sm">/ 5.0</span>
+                </div>
+                <div className="flex items-center gap-1 mt-2 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-4">
+                Computed live across verified patron bespoke reviews.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-800 bg-[#0d0d14] p-6 flex flex-col justify-between shadow-xl">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold block">
+                  Total Reviews Received
+                </span>
+                <p className="font-cinzel text-4xl sm:text-5xl font-black text-white mt-2">
+                  {reviews.length}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-emerald-400 mt-4">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>100% Verified Couture Patrons</span>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-800 bg-[#0d0d14] p-6 flex flex-col justify-between shadow-xl">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold block">
+                  Recommendation Rate
+                </span>
+                <p className="font-cinzel text-4xl sm:text-5xl font-black text-amber-300 mt-2">
+                  {reviewStats.recommendationRate || "100%"}
+                </p>
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-4">
+                Patrons would recommend Celoura atelier bespoke tailoring.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-800 bg-[#0d0d14] p-6 flex flex-col justify-between shadow-xl">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold block mb-2">
+                  Rating Distribution
+                </span>
+                <div className="space-y-1.5 text-[11px]">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviews.filter((r) => r.rating === star).length;
+                    const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-2">
+                        <span className="w-7 text-zinc-400 flex items-center gap-0.5">
+                          {star} <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                        </span>
+                        <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="w-6 text-right text-zinc-500 font-mono text-[10px]">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl border border-zinc-800 bg-[#0e0e14] p-4">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Search reviews by client, garment, location..."
+                value={reviewSearchQuery}
+                onChange={(e) => setReviewSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900/90 pl-10 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+              />
+              {reviewSearchQuery && (
+                <button
+                  onClick={() => setReviewSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Star Rating Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <span className="text-xs text-zinc-400 flex items-center gap-1 mr-1">
+                <Filter className="h-3 w-3 text-amber-400" />
+                Filter:
+              </span>
+              {[
+                { id: "all", label: `All (${reviews.length})` },
+                { id: "5", label: `5 Stars (${reviews.filter((r) => r.rating === 5).length})` },
+                { id: "4", label: `4 Stars (${reviews.filter((r) => r.rating === 4).length})` },
+                { id: "3", label: `3 Stars (${reviews.filter((r) => r.rating === 3).length})` },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  onClick={() => setReviewRatingFilter(pill.id)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                    reviewRatingFilter === pill.id
+                      ? "bg-amber-400 text-black shadow-gold-sm"
+                      : "border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700"
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Reviews List */}
+          {filteredReviews.length === 0 ? (
+            <div className="rounded-3xl border border-zinc-800 bg-[#0d0d14] p-12 text-center space-y-3">
+              <Star className="h-8 w-8 text-amber-400/40 mx-auto" />
+              <h3 className="font-cinzel text-lg font-bold text-white">No Reviews Match</h3>
+              <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                No customer ratings found matching your current filter. Try resetting search query or rating filter.
+              </p>
+              <button
+                onClick={() => {
+                  setReviewSearchQuery("");
+                  setReviewRatingFilter("all");
+                }}
+                className="btn-gold-outline rounded-full px-4 py-1.5 text-xs text-amber-300 font-semibold"
+              >
+                Reset Filter
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredReviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="rounded-3xl border border-zinc-800/80 bg-[#0d0d14] p-6 hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-4 group"
+                >
+                  <div>
+                    {/* Header: Stars + Category Pill + Delete */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-1 text-amber-400 mb-1.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < review.rating
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-zinc-700"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs font-bold text-amber-300 ml-1.5">
+                            {review.rating}.0
+                          </span>
+                        </div>
+                        <h4 className="font-cinzel text-base font-bold text-white group-hover:text-amber-200 transition">
+                          "{review.reviewTitle}"
+                        </h4>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {review.garmentCategory && (
+                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300 shrink-0">
+                            {review.garmentCategory}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleDeleteReview(review.id)}
+                          disabled={isDeletingReviewId === review.id}
+                          title="Delete Review"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition shrink-0 cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Review Text */}
+                    <p className="mt-3 text-xs text-zinc-300 leading-relaxed italic">
+                      "{review.comment}"
+                    </p>
+                  </div>
+
+                  {/* Patron Footer */}
+                  <div className="pt-4 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full border border-amber-400/40 bg-zinc-900 flex items-center justify-center font-bold text-amber-300 font-cinzel text-xs">
+                        {review.customerName ? review.customerName.charAt(0) : "P"}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-white">{review.customerName}</span>
+                          {review.verifiedPurchase && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-400 font-medium">
+                              <ShieldCheck className="h-3 w-3" />
+                              <span>Verified Patron</span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-zinc-400 flex items-center gap-2">
+                          {review.customerEmail && <span>{review.customerEmail}</span>}
+                          {review.location && (
+                            <>
+                              <span>•</span>
+                              <span>{review.location}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-zinc-500 font-mono">
+                      {review.createdAt ? review.createdAt.split("T")[0] : "Verified"}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

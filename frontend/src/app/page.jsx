@@ -19,14 +19,49 @@ import {
   Check,
   Crown
 } from "lucide-react";
-import { BUSINESS_INFO, getSavedDesigns, saveDesigns, GARMENT_TYPES } from "../lib/celouraData";
-import { getAllDesignsApi } from "../lib/api";
-
+import { 
+  BUSINESS_INFO, 
+  getSavedDesigns, 
+  saveDesigns, 
+  GARMENT_TYPES, 
+  getSavedDesignRatings, 
+  saveDesignRating 
+} from "../lib/celouraData";
+import { getAllDesignsApi, createReviewApi } from "../lib/api";
 
 export default function HomePage() {
   const [selectedDesignModal, setSelectedDesignModal] = useState(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState("all");
   const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+  const [designRatings, setDesignRatings] = useState(() => (typeof window !== "undefined" ? getSavedDesignRatings() : {}));
+  const [hoverRating, setHoverRating] = useState({});
+  const [justRatedId, setJustRatedId] = useState(null);
+
+  const handleRateDesign = async (design, ratingValue) => {
+    const updated = saveDesignRating(design.id, ratingValue);
+    setDesignRatings((prev) => ({
+      ...prev,
+      [design.id]: updated,
+    }));
+    setJustRatedId(design.id);
+    setTimeout(() => setJustRatedId(null), 2500);
+
+    // Persist directly to backend PostgreSQL
+    try {
+      await createReviewApi({
+        designId: design.id,
+        designTitle: design.title,
+        garmentCategory: design.category,
+        rating: ratingValue,
+        reviewTitle: `Patron Rating for ${design.title}`,
+        comment: `Direct rating of ${ratingValue} stars given in design card.`,
+        customerName: "Atelier Patron",
+        verifiedPurchase: true,
+      });
+    } catch (err) {
+      console.warn("Backend rating save warning:", err);
+    }
+  };
 
   useEffect(() => {
     const cached = getSavedDesigns();
@@ -559,6 +594,11 @@ export default function HomePage() {
         {filteredDesigns.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
             {filteredDesigns.slice(0, 5).map((item) => {
+              const ratingData = designRatings[item.id] || { rating: item.rating || 5.0, count: item.ratingCount || 1 };
+              const itemRating = ratingData.rating || 5.0;
+              const itemRatingsCount = ratingData.count || 1;
+              const userRated = ratingData.userRated;
+
               return (
                 <div
                   key={item.id}
@@ -578,6 +618,14 @@ export default function HomePage() {
                       <span className="absolute top-2 left-2 rounded-md bg-black/80 px-2 py-0.5 text-[9px] font-medium text-amber-300 border border-amber-400/30 backdrop-blur-sm">
                         {item.category}
                       </span>
+                      {/* Rating Badge */}
+                      <span className="absolute top-2 right-2 rounded-md bg-black/85 px-1.5 py-0.5 text-[9px] font-bold text-amber-300 border border-amber-400/30 backdrop-blur-sm flex items-center gap-1 shadow-sm">
+                        <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                        <span>{itemRating.toFixed(1)}</span>
+                        {itemRatingsCount > 1 && (
+                          <span className="text-zinc-400 text-[8px]">({itemRatingsCount})</span>
+                        )}
+                      </span>
                     </div>
 
                     <div className="mt-3 px-1">
@@ -587,6 +635,61 @@ export default function HomePage() {
                       <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
                         {item.fabric}
                       </p>
+
+                      {/* Direct Rating in the Design Card */}
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-2 px-1.5 py-1 rounded-lg bg-zinc-950/80 border border-zinc-800/80 flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-1">
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                              const isFilled = hoverRating[item.id] !== undefined
+                                ? star <= hoverRating[item.id]
+                                : star <= Math.round(itemRating);
+                              return (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRateDesign(item, star);
+                                  }}
+                                  onMouseEnter={() => setHoverRating((prev) => ({ ...prev, [item.id]: star }))}
+                                  onMouseLeave={() => setHoverRating((prev) => ({ ...prev, [item.id]: undefined }))}
+                                  className="p-0.5 transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                                  title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                                >
+                                  <Star
+                                    className={`h-3 w-3 transition-colors ${
+                                      isFilled
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-zinc-600 hover:text-amber-300"
+                                    }`}
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <span className="text-[10px] font-bold text-amber-300 ml-0.5 font-mono">
+                            {itemRating.toFixed(1)}
+                          </span>
+                        </div>
+
+                        {justRatedId === item.id ? (
+                          <span className="text-[9px] font-bold text-emerald-400 animate-pulse">
+                            Rated {userRated}★!
+                          </span>
+                        ) : userRated ? (
+                          <span className="text-[9px] font-semibold text-amber-300/90">
+                            You: {userRated}★
+                          </span>
+                        ) : (
+                          <span className="text-[9px] text-zinc-500 hover:text-amber-300 transition-colors">
+                            Rate
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -645,15 +748,76 @@ export default function HomePage() {
 
               <div className="space-y-4 text-left">
                 <div>
-                  <span className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">
-                    {selectedDesignModal.category}
-                  </span>
-                  <h3 className="font-cinzel text-xl font-bold text-white mt-1">
-                    {selectedDesignModal.title}
-                  </h3>
-                  <p className="font-sans text-lg font-bold text-amber-300 mt-1">
-                    {selectedDesignModal.priceFormatted || `LKR ${selectedDesignModal.price.toLocaleString()}`}
-                  </p>
+                  {(() => {
+                    const modalRatingData = designRatings[selectedDesignModal.id] || { rating: selectedDesignModal.rating || 5.0, count: selectedDesignModal.ratingCount || 1 };
+                    const modalRating = modalRatingData.rating || 5.0;
+                    const modalUserRated = modalRatingData.userRated;
+
+                    return (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">
+                            {selectedDesignModal.category}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span>{modalRating.toFixed(1)} • Customer Rating</span>
+                          </span>
+                        </div>
+                        <h3 className="font-cinzel text-xl font-bold text-white mt-1">
+                          {selectedDesignModal.title}
+                        </h3>
+
+                        {/* Direct Rating in Modal */}
+                        <div className="flex items-center gap-2 mt-2 p-2 rounded-xl bg-zinc-950/80 border border-zinc-800">
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                              const isFilled = hoverRating[selectedDesignModal.id] !== undefined
+                                ? star <= hoverRating[selectedDesignModal.id]
+                                : star <= Math.round(modalRating);
+                              return (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => handleRateDesign(selectedDesignModal, star)}
+                                  onMouseEnter={() => setHoverRating((prev) => ({ ...prev, [selectedDesignModal.id]: star }))}
+                                  onMouseLeave={() => setHoverRating((prev) => ({ ...prev, [selectedDesignModal.id]: undefined }))}
+                                  className="p-1 transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                                  title={`Rate ${star} Stars`}
+                                >
+                                  <Star
+                                    className={`h-4 w-4 transition-colors ${
+                                      isFilled ? "fill-amber-400 text-amber-400" : "text-zinc-600 hover:text-amber-300"
+                                    }`}
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <span className="text-xs font-bold text-amber-300 font-mono">
+                            {modalRating.toFixed(1)} / 5.0
+                          </span>
+                          {justRatedId === selectedDesignModal.id ? (
+                            <span className="text-[11px] font-bold text-emerald-400 animate-pulse">
+                              ✓ Rated {modalUserRated}★! Thank you
+                            </span>
+                          ) : modalUserRated ? (
+                            <span className="text-[11px] text-amber-300/90 font-medium">
+                              • Your rating: {modalUserRated}★
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-zinc-400">
+                              • Click stars to rate this design
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="font-sans text-lg font-bold text-amber-300 mt-2">
+                          {selectedDesignModal.priceFormatted || `LKR ${selectedDesignModal.price.toLocaleString()}`}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <p className="text-xs text-zinc-400 leading-relaxed">

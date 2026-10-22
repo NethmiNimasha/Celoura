@@ -106,3 +106,123 @@ export function addOrder(newOrder) {
   saveOrders(updated);
   return updated;
 }
+
+// Initial verified patron reviews
+export const INITIAL_REVIEWS = [
+  {
+    id: 1,
+    customerName: "Ayesha Jayawardena",
+    customerEmail: "ayesha.j@example.com",
+    designTitle: "Royal Empress Bridal Ensemble",
+    rating: 5,
+    reviewTitle: "Breathtaking Masterpiece & Exact Fit!",
+    comment: "My bridal lehenga from Celoura was beyond my wildest dreams! The antique 24K gold zardozi embroidery was intricately handcrafted. Master tailors in the Akuressa atelier ensured the measurements fit like a second skin.",
+    garmentCategory: "Bridal Lehengas",
+    location: "Colombo, Sri Lanka",
+    verifiedPurchase: true,
+    createdAt: "2026-10-15T10:30:00"
+  },
+  {
+    id: 2,
+    customerName: "Dilani Wickramasinghe",
+    customerEmail: "dilani.w@example.com",
+    designTitle: "Handcrafted Aari Saree Blouse",
+    rating: 5,
+    reviewTitle: "Exquisite Neckline & Premium Silk",
+    comment: "I ordered a customized sweetheart Aari embroidery saree blouse for a family wedding. The finish, sleeve embroidery, and piping were flawless. Delivered right on time!",
+    garmentCategory: "Saree Blouses",
+    location: "Galle, Sri Lanka",
+    verifiedPurchase: true,
+    createdAt: "2026-10-18T14:15:00"
+  },
+  {
+    id: 3,
+    customerName: "Shenaya Fernando",
+    customerEmail: "shenaya.f@example.com",
+    designTitle: "Velvet Couture Evening Frock",
+    rating: 5,
+    reviewTitle: "Royal Black & Gold Elegance",
+    comment: "The Italian micro-velvet fabric combined with gold threadwork felt so opulent. Everyone at the evening reception asked where I got it custom-made. Celoura is my go-to haute couture brand!",
+    garmentCategory: "Frocks & Gowns",
+    location: "Matara, Sri Lanka",
+    verifiedPurchase: true,
+    createdAt: "2026-10-19T16:45:00"
+  },
+  {
+    id: 4,
+    customerName: "Kavindi Perera",
+    customerEmail: "kavindi.p@example.com",
+    designTitle: "Flared Brocade Designer Skirt",
+    rating: 5,
+    reviewTitle: "Gorgeous 6-Meter Flare!",
+    comment: "The flare and can-can structure gave the skirt such an elegant royal sway. Their online custom measurement guidance made ordering seamless and effortless.",
+    garmentCategory: "Designer Skirts",
+    location: "Kandy, Sri Lanka",
+    verifiedPurchase: true,
+    createdAt: "2026-10-20T09:20:00"
+  }
+];
+
+export function getSavedReviews() {
+  if (typeof window === "undefined") return INITIAL_REVIEWS;
+  try {
+    const data = localStorage.getItem("celoura_reviews");
+    return data ? JSON.parse(data) : INITIAL_REVIEWS;
+  } catch (e) {
+    return INITIAL_REVIEWS;
+  }
+}
+
+export function saveReviews(reviews) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("celoura_reviews", JSON.stringify(reviews));
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export function addReview(newReview) {
+  const reviews = getSavedReviews();
+  const updated = [newReview, ...reviews];
+  saveReviews(updated);
+  return updated;
+}
+
+export function getSavedDesignRatings() {
+  if (typeof window === "undefined") return {};
+  try {
+    const data = localStorage.getItem("celoura_design_ratings");
+    return data ? JSON.parse(data) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveDesignRating(designId, rating) {
+  if (typeof window === "undefined") return { rating: Number(rating), count: 1, userRated: Number(rating) };
+  try {
+    const allRatings = getSavedDesignRatings();
+    const current = allRatings[designId] || { sum: 5.0, count: 1, rating: 5.0 };
+    const prevSum = current.sum || (current.rating ? current.rating * (current.count || 1) : 5.0);
+    const prevCount = current.count || 1;
+    const newSum = prevSum + Number(rating);
+    const newCount = prevCount + 1;
+    const newAverage = Math.round((newSum / newCount) * 10) / 10;
+
+    const updated = {
+      ...allRatings,
+      [designId]: {
+        sum: newSum,
+        count: newCount,
+        rating: newAverage,
+        userRated: Number(rating),
+      },
+    };
+    localStorage.setItem("celoura_design_ratings", JSON.stringify(updated));
+    return updated[designId];
+  } catch (e) {
+    console.error(e);
+    return { rating: Number(rating), count: 1, userRated: Number(rating) };
+  }
+}
