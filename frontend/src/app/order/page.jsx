@@ -60,6 +60,8 @@ const SILHOUETTES = [
   "Flared Trail Skirt with Structured Waist",
   "Paneled Fluted Mermaid",
   "Tiered Ruffle Silhouette",
+  "A-Line Flared Frock",
+  "Princess Cut Bridal Blouse",
 ];
 
 const NECKLINES = [
@@ -119,9 +121,9 @@ function OrderFormContent() {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
-  const [silhouette, setSilhouette] = useState(SILHOUETTES[0]);
-  const [neckline, setNeckline] = useState(NECKLINES[0]);
-  const [sleeve, setSleeve] = useState(SLEEVE_STYLES[0]);
+  const [silhouette, setSilhouette] = useState("");
+  const [neckline, setNeckline] = useState("");
+  const [sleeve, setSleeve] = useState("");
   
   const [selectedColor, setSelectedColor] = useState(COLOR_PALETTES[0].name);
   const [selectedFabric, setSelectedFabric] = useState(FABRIC_OPTIONS[0].name);
@@ -419,9 +421,9 @@ function OrderFormContent() {
         customDesignNotes: customDesignNotes || specialNotes,
         colour: selectedColor,
         fabric: selectedFabric,
-        silhouette,
-        neckline,
-        sleeve,
+        silhouette: silhouette || "Standard / As in Design",
+        neckline: neckline || "Standard / As in Design",
+        sleeve: sleeve || "Standard / As in Design",
         status: "Pending",
         totalAmount: estimatedTotal,
         depositPaid: 0,
@@ -645,15 +647,21 @@ function OrderFormContent() {
                 <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
                   <strong className="text-zinc-500 font-normal">Fabric:</strong> <span className="font-semibold">{selectedFabric}</span>
                 </div>
-                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
-                  <strong className="text-zinc-500 font-normal">Silhouette:</strong> <span className="font-semibold">{silhouette}</span>
-                </div>
-                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
-                  <strong className="text-zinc-500 font-normal">Neckline:</strong> <span className="font-semibold">{neckline}</span>
-                </div>
-                <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
-                  <strong className="text-zinc-500 font-normal">Sleeve:</strong> <span className="font-semibold">{sleeve}</span>
-                </div>
+                {silhouette && (
+                  <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                    <strong className="text-zinc-500 font-normal">Silhouette:</strong> <span className="font-semibold">{silhouette}</span>
+                  </div>
+                )}
+                {neckline && (
+                  <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                    <strong className="text-zinc-500 font-normal">Neckline:</strong> <span className="font-semibold">{neckline}</span>
+                  </div>
+                )}
+                {sleeve && (
+                  <div className="rounded-lg border border-amber-500/30 bg-black/60 px-2.5 py-1 text-amber-200">
+                    <strong className="text-zinc-500 font-normal">Sleeve:</strong> <span className="font-semibold">{sleeve}</span>
+                  </div>
+                )}
               </div>
 
               <p className="text-[11px] text-zinc-400 italic pt-1">
@@ -1068,58 +1076,65 @@ function OrderFormContent() {
               )}
             </div>
 
-            {/* Silhouette Architecture */}
-            <div className="space-y-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                {garmentType === "Frocks & Gowns" ? "Frock & Gown Silhouette Architecture" : garmentType === "Saree Blouses" ? "Saree Blouse Silhouette Architecture" : garmentType === "Designer Skirts" ? "Skirt Silhouette Architecture" : garmentType === "Couture Blouses" ? "Blouse Silhouette Architecture" : "Lehenga Silhouette Architecture"}
-              </label>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {SILHOUETTES.map((s) => (
-                  <button
-                    type="button"
-                    key={s}
-                    onClick={() => setSilhouette(s)}
-                    className={`rounded-xl border p-3 text-left text-xs transition ${
-                      silhouette === s
-                        ? "border-amber-400 bg-amber-400/10 text-white font-semibold shadow-gold-sm"
-                        : "border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-600"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Neckline & Sleeves */}
-            <div className="grid sm:grid-cols-2 gap-6 pt-2">
+            {/* Cut & Styling Specifications: Silhouette, Neckline & Sleeves */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                  Choli / Blouse Neckline
+                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 block">
+                  {garmentType === "Frocks & Gowns" ? "Frock & Gown Silhouette Architecture" : garmentType === "Saree Blouses" ? "Saree Blouse Silhouette Architecture" : garmentType === "Designer Skirts" ? "Skirt Silhouette Architecture" : garmentType === "Couture Blouses" ? "Blouse Silhouette Architecture" : "Lehenga Silhouette Architecture"}{" "}
+                  <span className="text-zinc-400 font-normal lowercase tracking-normal text-[11px]">(optional)</span>
                 </label>
                 <select
-                  value={neckline}
-                  onChange={(e) => setNeckline(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  value={silhouette}
+                  onChange={(e) => setSilhouette(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none cursor-pointer"
                 >
-                  {NECKLINES.map((n) => (
-                    <option key={n} value={n}>{n}</option>
+                  <option value="" className="bg-zinc-900 text-zinc-400">Select Silhouette (Optional)</option>
+                  {SILHOUETTES.map((s) => (
+                    <option key={s} value={s} className="bg-zinc-900 text-white">{s}</option>
                   ))}
+                  {silhouette && !SILHOUETTES.includes(silhouette) && (
+                    <option value={silhouette} className="bg-zinc-900 text-white">{silhouette}</option>
+                  )}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                  Sleeve Style
+                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 block">
+                  Choli / Blouse Neckline{" "}
+                  <span className="text-zinc-400 font-normal lowercase tracking-normal text-[11px]">(optional)</span>
+                </label>
+                <select
+                  value={neckline}
+                  onChange={(e) => setNeckline(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none cursor-pointer"
+                >
+                  <option value="" className="bg-zinc-900 text-zinc-400">Select Neckline (Optional)</option>
+                  {NECKLINES.map((n) => (
+                    <option key={n} value={n} className="bg-zinc-900 text-white">{n}</option>
+                  ))}
+                  {neckline && !NECKLINES.includes(neckline) && (
+                    <option value={neckline} className="bg-zinc-900 text-white">{neckline}</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 block">
+                  Sleeve Style{" "}
+                  <span className="text-zinc-400 font-normal lowercase tracking-normal text-[11px]">(optional)</span>
                 </label>
                 <select
                   value={sleeve}
                   onChange={(e) => setSleeve(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none cursor-pointer"
                 >
+                  <option value="" className="bg-zinc-900 text-zinc-400">Select Sleeve Style (Optional)</option>
                   {SLEEVE_STYLES.map((sl) => (
-                    <option key={sl} value={sl}>{sl}</option>
+                    <option key={sl} value={sl} className="bg-zinc-900 text-white">{sl}</option>
                   ))}
+                  {sleeve && !SLEEVE_STYLES.includes(sleeve) && (
+                    <option value={sleeve} className="bg-zinc-900 text-white">{sleeve}</option>
+                  )}
                 </select>
               </div>
             </div>
@@ -1560,11 +1575,11 @@ function OrderFormContent() {
               <div className="grid sm:grid-cols-2 gap-3 text-xs text-zinc-300 border-t border-zinc-800 pt-3">
                 <p><strong className="text-zinc-500">Design:</strong> {selectedDesign ? selectedDesign.title : customDesignTitle || "Bespoke Dress"}</p>
                 <p><strong className="text-zinc-500">Category:</strong> {garmentType}</p>
-                <p><strong className="text-zinc-500">Silhouette:</strong> {silhouette}</p>
+                <p><strong className="text-zinc-500">Silhouette:</strong> {silhouette || "Standard / As in Design"}</p>
                 <p><strong className="text-zinc-500">Colour:</strong> {selectedColor}</p>
                 <p><strong className="text-zinc-500">Fabric:</strong> {selectedFabric}</p>
-                <p><strong className="text-zinc-500">Neckline:</strong> {neckline}</p>
-                <p><strong className="text-zinc-500">Sleeve:</strong> {sleeve}</p>
+                <p><strong className="text-zinc-500">Neckline:</strong> {neckline || "Standard / As in Design"}</p>
+                <p><strong className="text-zinc-500">Sleeve:</strong> {sleeve || "Standard / As in Design"}</p>
               </div>
 
               <div className="border-t border-zinc-800 pt-3 text-[11px] text-zinc-400">
