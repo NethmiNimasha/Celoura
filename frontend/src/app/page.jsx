@@ -32,8 +32,8 @@ import { getAllDesignsApi, createReviewApi } from "../lib/api";
 export default function HomePage() {
   const [selectedDesignModal, setSelectedDesignModal] = useState(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState("all");
-  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
-  const [designRatings, setDesignRatings] = useState(() => (typeof window !== "undefined" ? getSavedDesignRatings() : {}));
+  const [designs, setDesigns] = useState([]);
+  const [designRatings, setDesignRatings] = useState({});
   const [hoverRating, setHoverRating] = useState({});
   const [justRatedId, setJustRatedId] = useState(null);
 
@@ -66,6 +66,10 @@ export default function HomePage() {
   useEffect(() => {
     const cached = getSavedDesigns();
     if (cached.length > 0) setDesigns(cached);
+    const cachedRatings = getSavedDesignRatings();
+    if (cachedRatings && Object.keys(cachedRatings).length > 0) {
+      setDesignRatings(cachedRatings);
+    }
     getAllDesignsApi()
       .then((remoteDesigns) => {
         if (Array.isArray(remoteDesigns)) {

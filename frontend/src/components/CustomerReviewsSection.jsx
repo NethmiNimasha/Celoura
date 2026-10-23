@@ -30,7 +30,7 @@ import {
 } from "../lib/api";
 
 export default function CustomerReviewsSection({ onOpenReviewModal }) {
-  const [reviews, setReviews] = useState(() => (typeof window !== "undefined" ? getSavedReviews() : []));
+  const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState({
     averageRating: 5.0,
     totalReviews: 4,

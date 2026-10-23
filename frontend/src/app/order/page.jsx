@@ -111,7 +111,7 @@ function OrderFormContent() {
   // Form State
   const [garmentType, setGarmentType] = useState("Frocks & Gowns");
   const [designSelectionMode, setDesignSelectionMode] = useState("catalogue"); // "catalogue" | "custom"
-  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+  const [designs, setDesigns] = useState([]);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [customDesignTitle, setCustomDesignTitle] = useState("");

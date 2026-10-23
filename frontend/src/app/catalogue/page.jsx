@@ -30,12 +30,12 @@ function CatalogueContent() {
   const searchParams = useSearchParams();
   const initialCategoryParam = searchParams.get("category");
 
-  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+  const [designs, setDesigns] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [activeModalDesign, setActiveModalDesign] = useState(null);
-  const [designRatings, setDesignRatings] = useState(() => (typeof window !== "undefined" ? getSavedDesignRatings() : {}));
+  const [designRatings, setDesignRatings] = useState({});
   const [hoverRating, setHoverRating] = useState({});
   const [justRatedId, setJustRatedId] = useState(null);
 
@@ -68,6 +68,10 @@ function CatalogueContent() {
     const cached = getSavedDesigns();
     if (cached.length > 0) {
       setDesigns(cached);
+    }
+    const cachedRatings = getSavedDesignRatings();
+    if (cachedRatings && Object.keys(cachedRatings).length > 0) {
+      setDesignRatings(cachedRatings);
     }
     getAllDesignsApi()
       .then((remoteDesigns) => {

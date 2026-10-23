@@ -53,7 +53,7 @@ export default function AiRecommendationsPage() {
   const [selectedEmbellishment, setSelectedEmbellishment] = useState(EMBELLISHMENT_PREFERENCES[0].id);
   const [selectedBudget, setSelectedBudget] = useState(BUDGET_TIERS[0].id);
   const [customPrompt, setCustomPrompt] = useState("");
-  const [designs, setDesigns] = useState(() => (typeof window !== "undefined" ? getSavedDesigns() : []));
+  const [designs, setDesigns] = useState([]);
 
   useEffect(() => {
     const cached = getSavedDesigns();

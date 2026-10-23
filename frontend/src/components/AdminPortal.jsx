@@ -73,7 +73,7 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState("orders"); // "orders" | "catalogue" | "settings" | "reviews"
   const [orders, setOrders] = useState([]);
   const [designs, setDesigns] = useState([]);
-  const [reviews, setReviews] = useState(() => (typeof window !== "undefined" ? getSavedReviews() : []));
+  const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({ totalReviews: 4, averageRating: 5.0, recommendationRate: "100%" });
   const [reviewRatingFilter, setReviewRatingFilter] = useState("all");
   const [reviewSearchQuery, setReviewSearchQuery] = useState("");
@@ -120,7 +120,7 @@ export default function AdminPortal() {
   const editFileInputRef = useRef(null);
 
   const [newDesign, setNewDesign] = useState({
-    id: `CEL-DSG-${Math.floor(10 + Math.random() * 90)}`,
+    id: "CEL-DSG-NEW",
     title: "",
     category: "Bridal Lehengas",
     price: 150000,
@@ -151,6 +151,7 @@ export default function AdminPortal() {
     setAuthChecked(true);
     setOrders(getSavedOrders());
     setDesigns(getSavedDesigns());
+    setReviews(getSavedReviews());
 
     // Sync fresh profile details from backend
     if (user.email) {

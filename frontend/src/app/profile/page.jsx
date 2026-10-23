@@ -40,7 +40,7 @@ import AdminPortal from "../../components/AdminPortal";
 
 export default function CustomerProfilePage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(() => (typeof window !== "undefined" ? getStoredUser() : null));
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("personal"); // "personal" | "measurements" | "orders" | "security"
 
@@ -49,13 +49,7 @@ export default function CustomerProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [role, setRole] = useState(() => {
-    if (typeof window !== "undefined") {
-      const u = getStoredUser();
-      return u?.role || "ROLE_CUSTOMER";
-    }
-    return "ROLE_CUSTOMER";
-  });
+  const [role, setRole] = useState("ROLE_CUSTOMER");
   const [memberSince, setMemberSince] = useState("2026");
 
   // Security Form State
