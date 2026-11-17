@@ -6,6 +6,8 @@
   "/contact/page": "/contact",
   "/dashboard/page": "/dashboard",
   "/order/page": "/order",
+  "/order/payment-cancelled/page": "/order/payment-cancelled",
+  "/order/payment-success/page": "/order/payment-success",
   "/page": "/",
   "/profile/page": "/profile",
   "/recommendations/page": "/recommendations",

@@ -25,7 +25,9 @@ import {
   ORDER_STATUSES, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getOrderByIdApi, getAllOrdersApi } from "../../lib/api";
+import { getOrderByIdApi, getAllOrdersApi, initiatePayHerePaymentApi } from "../../lib/api";
+import { launchPayHereCheckout } from "../../lib/payhere";
+import { CreditCard, Loader2 } from "lucide-react";
 
 function TrackContent() {
   const searchParams = useSearchParams();
@@ -36,6 +38,38 @@ function TrackContent() {
   const [orders, setOrders] = useState([]);
   const [notFound, setNotFound] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [payError, setPayError] = useState("");
+
+  const handlePayWithPayHere = async (paymentType = "DEPOSIT") => {
+    if (!selectedOrder) return;
+    setIsPaying(true);
+    setPayError("");
+    try {
+      const checkoutConfig = await initiatePayHerePaymentApi({
+        orderId: selectedOrder.id,
+        paymentType,
+      });
+
+      await launchPayHereCheckout({
+        checkoutConfig,
+        onCompleted: (orderId) => {
+          window.location.href = `/order/payment-success?orderId=${encodeURIComponent(selectedOrder.id)}`;
+        },
+        onDismissed: () => {
+          setIsPaying(false);
+        },
+        onError: (err) => {
+          console.error("PayHere error:", err);
+          setPayError("Payment was cancelled or could not be processed.");
+          setIsPaying(false);
+        },
+      });
+    } catch (err) {
+      setPayError(err.message || "Failed to launch PayHere payment. Please try again.");
+      setIsPaying(false);
+    }
+  };
 
   const findOrder = async (query) => {
     if (!query) return;
@@ -338,6 +372,69 @@ function TrackContent() {
                     <strong className="font-cinzel text-sm text-amber-400">
                       LKR {selectedOrder.totalAmount?.toLocaleString()}
                     </strong>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-zinc-500">Deposit Paid:</span>
+                    <span className="font-semibold text-emerald-400">
+                      LKR {(selectedOrder.depositPaid || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-zinc-500">Remaining Balance:</span>
+                    <span className="font-semibold text-amber-300">
+                      LKR {Math.max(0, (selectedOrder.totalAmount || 0) - (selectedOrder.depositPaid || 0)).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* PayHere Checkout Action */}
+                  <div className="pt-3 border-t border-zinc-800/80">
+                    {payError && (
+                      <p className="text-xs text-red-400 mb-2">{payError}</p>
+                    )}
+                    {(selectedOrder.depositPaid || 0) >= (selectedOrder.totalAmount || 1) ? (
+                      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-center text-xs text-emerald-300 font-semibold flex items-center justify-center gap-1.5">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        <span>Payment Fully Settled (LKR {(selectedOrder.totalAmount || 0).toLocaleString()})</span>
+                      </div>
+                    ) : (selectedOrder.depositPaid || 0) === 0 ? (
+                      <button
+                        type="button"
+                        disabled={isPaying}
+                        onClick={() => handlePayWithPayHere("DEPOSIT")}
+                        className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
+                      >
+                        {isPaying ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Opening PayHere Checkout...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="h-4 w-4" />
+                            <span>Pay 50% Advance Atelier Deposit (LKR {Math.round((selectedOrder.totalAmount || 0) * 0.5).toLocaleString()})</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isPaying}
+                        onClick={() => handlePayWithPayHere("BALANCE")}
+                        className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
+                      >
+                        {isPaying ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Opening PayHere Checkout...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="h-4 w-4" />
+                            <span>Pay Remaining Balance (LKR {Math.max(0, (selectedOrder.totalAmount || 0) - (selectedOrder.depositPaid || 0)).toLocaleString()})</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
 

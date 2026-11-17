@@ -34,6 +34,7 @@ public class Order {
 
     private BigDecimal totalAmount;
     private BigDecimal depositPaid = BigDecimal.ZERO;
+    private String paymentStatus = "Unpaid"; // Unpaid, Deposit Paid, Fully Paid
 
     private LocalDate eventDate;
     private LocalDate orderDate = LocalDate.now();
@@ -104,6 +105,9 @@ public class Order {
 
     public BigDecimal getDepositPaid() { return depositPaid; }
     public void setDepositPaid(BigDecimal depositPaid) { this.depositPaid = depositPaid; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
     public LocalDate getEventDate() { return eventDate; }
     public void setEventDate(LocalDate eventDate) { this.eventDate = eventDate; }

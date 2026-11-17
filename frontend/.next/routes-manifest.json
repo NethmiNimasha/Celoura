@@ -72,6 +72,18 @@
       "namedRegex": "^/order(?:/)?$"
     },
     {
+      "page": "/order/payment-cancelled",
+      "regex": "^/order/payment\\-cancelled(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order/payment\\-cancelled(?:/)?$"
+    },
+    {
+      "page": "/order/payment-success",
+      "regex": "^/order/payment\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order/payment\\-success(?:/)?$"
+    },
+    {
       "page": "/profile",
       "regex": "^/profile(?:/)?$",
       "routeKeys": {},

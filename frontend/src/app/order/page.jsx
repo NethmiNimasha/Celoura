@@ -25,7 +25,8 @@ import {
   Loader2,
   Camera,
   Trash2,
-  ImageIcon
+  ImageIcon,
+  CreditCard
 } from "lucide-react";
 import { 
   getSavedDesigns,
@@ -33,7 +34,8 @@ import {
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getStoredUser, createOrderApi, getAllDesignsApi } from "../../lib/api";
+import { getStoredUser, createOrderApi, getAllDesignsApi, initiatePayHerePaymentApi } from "../../lib/api";
+import { launchPayHereCheckout } from "../../lib/payhere";
 
 const COLOR_PALETTES = [
   { name: "Obsidian Black", hex: "#0a0a0c", border: "#d4af37", text: "text-amber-300" },
@@ -151,6 +153,8 @@ function OrderFormContent() {
   const [eventDate, setEventDate] = useState("");
   const [specialNotes, setSpecialNotes] = useState("");
   const [referenceFile, setReferenceFile] = useState(null);
+  const [paymentPreference, setPaymentPreference] = useState("DEPOSIT"); // DEPOSIT, FULL, OFFLINE
+  const [isLaunchingPayHere, setIsLaunchingPayHere] = useState(false);
 
   // Errors state
   const [errors, setErrors] = useState({});
@@ -452,6 +456,35 @@ function OrderFormContent() {
       addOrder(newOrder);
       setSubmittedOrder(newOrder);
       window.scrollTo({ top: 80, behavior: "smooth" });
+
+      // Automatically launch PayHere popup if online payment is chosen
+      if (paymentPreference !== "OFFLINE") {
+        try {
+          setIsLaunchingPayHere(true);
+          const payType = paymentPreference === "FULL" ? "FULL" : "DEPOSIT";
+          const checkoutConfig = await initiatePayHerePaymentApi({
+            orderId: newOrder.id,
+            paymentType: payType,
+          });
+
+          await launchPayHereCheckout({
+            checkoutConfig,
+            onCompleted: () => {
+              window.location.href = `/order/payment-success?orderId=${encodeURIComponent(newOrder.id)}`;
+            },
+            onDismissed: () => {
+              setIsLaunchingPayHere(false);
+            },
+            onError: (err) => {
+              console.error("PayHere launch error:", err);
+              setIsLaunchingPayHere(false);
+            },
+          });
+        } catch (payErr) {
+          console.warn("PayHere checkout initiation warning:", payErr);
+          setIsLaunchingPayHere(false);
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -520,6 +553,56 @@ function OrderFormContent() {
               <span className="text-[10px] text-zinc-400 font-medium">
                 {submittedOrder.isCustomDesign ? "Custom Uploaded Commission" : "Catalogue Selection"}
               </span>
+            </div>
+          )}
+
+          {/* Instant PayHere 50% Deposit Trigger */}
+          {(submittedOrder.depositPaid || 0) === 0 && (
+            <div className="my-6 max-w-md mx-auto rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-0.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-2">
+                <CreditCard className="h-3.5 w-3.5" />
+                <span>PayHere Secure Checkout</span>
+              </span>
+              <p className="text-xs text-zinc-300 mb-3">
+                Lock in your atelier slot immediately by paying the 50% advance deposit online.
+              </p>
+              <button
+                type="button"
+                disabled={isLaunchingPayHere}
+                onClick={async () => {
+                  try {
+                    setIsLaunchingPayHere(true);
+                    const checkoutConfig = await initiatePayHerePaymentApi({
+                      orderId: submittedOrder.id,
+                      paymentType: "DEPOSIT",
+                    });
+                    await launchPayHereCheckout({
+                      checkoutConfig,
+                      onCompleted: () => {
+                        window.location.href = `/order/payment-success?orderId=${encodeURIComponent(submittedOrder.id)}`;
+                      },
+                      onDismissed: () => setIsLaunchingPayHere(false),
+                      onError: () => setIsLaunchingPayHere(false),
+                    });
+                  } catch (e) {
+                    setIsLaunchingPayHere(false);
+                    alert("Could not open PayHere checkout. Please retry via the track page.");
+                  }
+                }}
+                className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
+              >
+                {isLaunchingPayHere ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-black" />
+                    <span>Connecting to PayHere...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4" />
+                    <span>Pay 50% Advance Atelier Deposit (LKR {Math.round((submittedOrder.totalAmount || 0) * 0.5).toLocaleString()})</span>
+                  </>
+                )}
+              </button>
             </div>
           )}
 
@@ -1582,10 +1665,112 @@ function OrderFormContent() {
                 <p><strong className="text-zinc-500">Sleeve:</strong> {sleeve || "Standard / As in Design"}</p>
               </div>
 
-              <div className="border-t border-zinc-800 pt-3 text-[11px] text-zinc-400">
-                <p>
-                  *No immediate payment required. Final pricing, measurements, fitting arrangements, and completion dates will be confirmed directly with Celoura Fashion.
-                </p>
+              {/* Payment Method & Advance Deposit Selection */}
+              <div className="border-t border-zinc-800 pt-4 space-y-3">
+                <span className="text-xs font-bold text-amber-300 block uppercase tracking-wider flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Choose Payment & Confirmation Preference</span>
+                </span>
+
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <label
+                    className={`cursor-pointer rounded-2xl border p-3.5 transition flex flex-col justify-between ${
+                      paymentPreference === "DEPOSIT"
+                        ? "border-amber-400 bg-amber-400/10 shadow-gold-sm"
+                        : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="text-xs font-bold text-white">50% Advance Deposit</span>
+                      <input
+                        type="radio"
+                        name="paymentPref"
+                        value="DEPOSIT"
+                        checked={paymentPreference === "DEPOSIT"}
+                        onChange={() => setPaymentPreference("DEPOSIT")}
+                        className="accent-amber-400"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <span className="font-cinzel text-sm font-bold text-amber-400">
+                        LKR {Math.round(estimatedTotal * 0.5).toLocaleString()}
+                      </span>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 leading-snug">
+                        Instant atelier queue reservation via PayHere (Visa/MC/FriMi).
+                      </p>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`cursor-pointer rounded-2xl border p-3.5 transition flex flex-col justify-between ${
+                      paymentPreference === "FULL"
+                        ? "border-amber-400 bg-amber-400/10 shadow-gold-sm"
+                        : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="text-xs font-bold text-white">Full 100% Upfront</span>
+                      <input
+                        type="radio"
+                        name="paymentPref"
+                        value="FULL"
+                        checked={paymentPreference === "FULL"}
+                        onChange={() => setPaymentPreference("FULL")}
+                        className="accent-amber-400"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <span className="font-cinzel text-sm font-bold text-amber-400">
+                        LKR {estimatedTotal.toLocaleString()}
+                      </span>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 leading-snug">
+                        Settle full haute couture fee online in one transaction.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`cursor-pointer rounded-2xl border p-3.5 transition flex flex-col justify-between ${
+                      paymentPreference === "OFFLINE"
+                        ? "border-amber-400 bg-amber-400/10 shadow-gold-sm"
+                        : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="text-xs font-bold text-white">Pay at Atelier</span>
+                      <input
+                        type="radio"
+                        name="paymentPref"
+                        value="OFFLINE"
+                        checked={paymentPreference === "OFFLINE"}
+                        onChange={() => setPaymentPreference("OFFLINE")}
+                        className="accent-amber-400"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-xs font-semibold text-zinc-300">
+                        Cash / Bank Transfer
+                      </span>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 leading-snug">
+                        Discuss and pay deposit in person at our Akuressa boutique.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="text-[11px] text-zinc-400 pt-1">
+                  <p>
+                    {paymentPreference !== "OFFLINE" ? (
+                      <span className="text-amber-300 font-medium">
+                        ● You will be smoothly connected to the secure PayHere payment gateway upon clicking Submit.
+                      </span>
+                    ) : (
+                      <span>
+                        *No immediate online payment required. Our atelier team will confirm fitting details directly.
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
 

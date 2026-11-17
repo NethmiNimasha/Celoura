@@ -6,6 +6,8 @@
   "/contact/page": "app/contact/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/order/page": "app/order/page.js",
+  "/order/payment-cancelled/page": "app/order/payment-cancelled/page.js",
+  "/order/payment-success/page": "app/order/payment-success/page.js",
   "/page": "app/page.js",
   "/profile/page": "app/profile/page.js",
   "/recommendations/page": "app/recommendations/page.js",

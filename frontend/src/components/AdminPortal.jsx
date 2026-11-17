@@ -36,7 +36,8 @@ import {
   MapPin,
   Building2,
   Check,
-  Star
+  Star,
+  CreditCard
 } from "lucide-react";
 import { 
   getSavedOrders, 
@@ -105,6 +106,49 @@ export default function AdminPortal() {
 
   // Modals state
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+  const [offlineDepositAmount, setOfflineDepositAmount] = useState("");
+  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+
+  const handleRecordOfflinePayment = async () => {
+    if (!selectedOrderDetails || !offlineDepositAmount) return;
+    const amountNum = parseFloat(offlineDepositAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      showToast("error", "Please enter a valid deposit amount.");
+      return;
+    }
+
+    setIsRecordingPayment(true);
+    try {
+      const currentDeposit = selectedOrderDetails.depositPaid || 0;
+      const newDeposit = currentDeposit + amountNum;
+      const total = selectedOrderDetails.totalAmount || 0;
+      const newPaymentStatus = newDeposit >= total ? "Fully Paid" : "Deposit Paid";
+      const newOrderStatus = selectedOrderDetails.status === "Pending" ? "Confirmed" : selectedOrderDetails.status;
+
+      const updatedFields = {
+        depositPaid: newDeposit,
+        paymentStatus: newPaymentStatus,
+        status: newOrderStatus,
+        notes: (selectedOrderDetails.notes || "") + `\n[Offline Deposit] LKR ${amountNum.toLocaleString()} received at atelier on ${new Date().toLocaleDateString()}.`
+      };
+
+      const updatedOrder = { ...selectedOrderDetails, ...updatedFields };
+      setSelectedOrderDetails(updatedOrder);
+
+      const updatedList = orders.map((o) => (o.id === selectedOrderDetails.id ? updatedOrder : o));
+      setOrders(updatedList);
+      saveOrders(updatedList);
+
+      await updateOrderApi(selectedOrderDetails.id, updatedFields);
+      setOfflineDepositAmount("");
+      showToast("success", `Deposit of LKR ${amountNum.toLocaleString()} recorded successfully!`);
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Failed to record payment.");
+    } finally {
+      setIsRecordingPayment(false);
+    }
+  };
   
   // Add Design State
   const [isAddDesignOpen, setIsAddDesignOpen] = useState(false);
@@ -721,7 +765,20 @@ export default function AdminPortal() {
                         {order.eventDate || "Not specified"}
                       </td>
                       <td className="px-6 py-4 font-semibold text-white">
-                        LKR {order.totalAmount?.toLocaleString()}
+                        <div>LKR {order.totalAmount?.toLocaleString()}</div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${
+                          (order.depositPaid || 0) >= (order.totalAmount || 1)
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                            : (order.depositPaid || 0) > 0
+                            ? "bg-amber-500/10 text-amber-300 border border-amber-500/30"
+                            : "bg-zinc-800 text-zinc-400"
+                        }`}>
+                          {(order.depositPaid || 0) >= (order.totalAmount || 1)
+                            ? "Fully Paid"
+                            : (order.depositPaid || 0) > 0
+                            ? `Deposit: LKR ${(order.depositPaid || 0).toLocaleString()}`
+                            : "Unpaid"}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <select
@@ -1282,6 +1339,76 @@ export default function AdminPortal() {
                 <p><strong>Fabric:</strong> {selectedOrderDetails.fabric}</p>
                 <p><strong>Quote Total:</strong> LKR {selectedOrderDetails.totalAmount?.toLocaleString()}</p>
               </div>
+            </div>
+
+            {/* PayHere Financial & Billing Summary */}
+            <div className="rounded-2xl border border-amber-500/30 bg-zinc-950 p-5 mb-6">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-3">
+                <span className="font-bold text-amber-300 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Atelier Billing & PayHere Status</span>
+                </span>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  (selectedOrderDetails.depositPaid || 0) >= (selectedOrderDetails.totalAmount || 1)
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                    : (selectedOrderDetails.depositPaid || 0) > 0
+                    ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                    : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                }`}>
+                  {(selectedOrderDetails.depositPaid || 0) >= (selectedOrderDetails.totalAmount || 1)
+                    ? "● Fully Paid"
+                    : (selectedOrderDetails.depositPaid || 0) > 0
+                    ? "● Deposit Paid (50%)"
+                    : "○ Unpaid"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 text-center mb-4">
+                <div className="rounded-xl bg-zinc-900/80 p-3 border border-zinc-800">
+                  <span className="text-[10px] uppercase text-zinc-400 block">Total Quote</span>
+                  <strong className="text-white text-sm font-cinzel">
+                    LKR {(selectedOrderDetails.totalAmount || 0).toLocaleString()}
+                  </strong>
+                </div>
+                <div className="rounded-xl bg-zinc-900/80 p-3 border border-zinc-800">
+                  <span className="text-[10px] uppercase text-zinc-400 block">Deposit Received</span>
+                  <strong className="text-emerald-400 text-sm font-cinzel">
+                    LKR {(selectedOrderDetails.depositPaid || 0).toLocaleString()}
+                  </strong>
+                </div>
+                <div className="rounded-xl bg-zinc-900/80 p-3 border border-zinc-800">
+                  <span className="text-[10px] uppercase text-zinc-400 block">Balance Remaining</span>
+                  <strong className="text-amber-300 text-sm font-cinzel">
+                    LKR {Math.max(0, (selectedOrderDetails.totalAmount || 0) - (selectedOrderDetails.depositPaid || 0)).toLocaleString()}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Offline Deposit Recorder */}
+              {(selectedOrderDetails.depositPaid || 0) < (selectedOrderDetails.totalAmount || 1) && (
+                <div className="rounded-xl border border-zinc-800 bg-black/40 p-3 flex flex-col sm:flex-row items-center gap-2">
+                  <div className="flex-1 w-full">
+                    <label className="text-[10px] text-zinc-400 block mb-1">
+                      Record In-Person / Bank Deposit (LKR):
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 15000"
+                      value={offlineDepositAmount}
+                      onChange={(e) => setOfflineDepositAmount(e.target.value)}
+                      className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isRecordingPayment || !offlineDepositAmount}
+                    onClick={handleRecordOfflinePayment}
+                    className="btn-gold rounded-lg px-4 py-2 text-xs font-bold text-black mt-4 sm:mt-auto shrink-0 disabled:opacity-50"
+                  >
+                    {isRecordingPayment ? "Recording..." : "Save Deposit"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Custom Design Image Reference if attached */}

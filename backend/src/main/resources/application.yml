@@ -29,6 +29,14 @@ celoura:
     email: "nethunanayakkara315@gmail.com"
     whatsapp: "94771699754"
 
+  payhere:
+    merchant-id: ${PAYHERE_MERCHANT_ID:1220000}
+    merchant-secret: ${PAYHERE_MERCHANT_SECRET:sandbox_secret_placeholder}
+    mode: ${PAYHERE_MODE:sandbox}
+    notify-url: ${PAYHERE_NOTIFY_URL:http://localhost:8080/api/payments/payhere/notify}
+    return-url: ${PAYHERE_RETURN_URL:http://localhost:3000/order/payment-success}
+    cancel-url: ${PAYHERE_CANCEL_URL:http://localhost:3000/order/payment-cancelled}
+
 logging:
   level:
     com.celoura: DEBUG

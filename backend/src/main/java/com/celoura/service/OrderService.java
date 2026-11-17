@@ -98,6 +98,7 @@ public class OrderService {
         if (updated.getStatus() != null) existing.setStatus(updated.getStatus());
         if (updated.getTotalAmount() != null) existing.setTotalAmount(updated.getTotalAmount());
         if (updated.getDepositPaid() != null) existing.setDepositPaid(updated.getDepositPaid());
+        if (updated.getPaymentStatus() != null) existing.setPaymentStatus(updated.getPaymentStatus());
         if (updated.getEventDate() != null) existing.setEventDate(updated.getEventDate());
         if (updated.getEstimatedCompletion() != null) existing.setEstimatedCompletion(updated.getEstimatedCompletion());
         if (updated.getAssignedArtisan() != null) existing.setAssignedArtisan(updated.getAssignedArtisan());

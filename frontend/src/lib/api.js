@@ -520,6 +520,56 @@ export async function deleteReviewApi(id) {
   }
 }
 
+/**
+ * ========================================================
+ * PAYHERE ONLINE PAYMENT GATEWAY REST APIS
+ * ========================================================
+ */
+
+/**
+ * Initiate a PayHere payment (50% Deposit, Balance, or Full Payment)
+ */
+export async function initiatePayHerePaymentApi({ orderId, paymentType = "DEPOSIT" }) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/payments/payhere/initiate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, paymentType }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to initiate PayHere checkout.");
+    }
+    return data;
+  } catch (err) {
+    console.error("PayHere initiate error:", err);
+    throw err;
+  }
+}
+
+/**
+ * Retrieve all payment transactions for an order
+ */
+export async function getOrderPaymentsApi(orderId) {
+  if (!orderId) return [];
+  try {
+    const res = await fetch(`${API_BASE_URL}/payments/order/${encodeURIComponent(orderId)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("getOrderPaymentsApi failed:", err);
+    return [];
+  }
+}
+
+
 
 
 
