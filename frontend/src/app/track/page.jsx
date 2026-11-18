@@ -353,17 +353,6 @@ function TrackContent() {
                       LKR {Math.max(0, (selectedOrder.totalAmount || 0) - (selectedOrder.depositPaid || 0)).toLocaleString()}
                     </span>
                   </div>
-
-                  {/* Atelier Deposit & Settlement Note */}
-                  <div className="pt-3 border-t border-zinc-800/80 text-[11px] text-zinc-400">
-                    <p className="flex items-center gap-1.5 text-amber-300 font-semibold mb-1">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Atelier Deposit & Balance Settlement</span>
-                    </p>
-                    <p>
-                      Deposits and balances can be settled via cash, card, or direct bank transfer during your fitting consultation at our Akuressa studio.
-                    </p>
-                  </div>
                 </div>
 
                 {/* Measurements Table */}

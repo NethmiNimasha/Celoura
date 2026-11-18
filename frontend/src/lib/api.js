@@ -552,33 +552,6 @@ export async function deleteReviewApi(id) {
   }
 }
 
-/**
- * ========================================================
- * PAYMENTS & TRANSACTIONS REST APIS
- * ========================================================
- */
-
-/**
- * Retrieve all payment transactions for an order
- */
-export async function getOrderPaymentsApi(orderId) {
-  if (!orderId) return [];
-  try {
-    const res = await fetch(`${API_BASE_URL}/payments/order/${encodeURIComponent(orderId)}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (!res.ok) {
-      return [];
-    }
-    return await res.json();
-  } catch (err) {
-    console.warn("getOrderPaymentsApi failed:", err);
-    return [];
-  }
-}
-
 
 
 

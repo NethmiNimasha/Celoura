@@ -75,28 +75,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     unit VARCHAR(20) DEFAULT 'inches'
 );
 
--- 4. PAYMENTS TABLE (PayHere Gateway Transactions)
-CREATE TABLE IF NOT EXISTS public.payments (
-    id BIGSERIAL PRIMARY KEY,
-    order_id VARCHAR(255) NOT NULL,
-    customer_email VARCHAR(255),
-    customer_name VARCHAR(255),
-    amount NUMERIC(38, 2) NOT NULL,
-    currency VARCHAR(10) NOT NULL DEFAULT 'LKR',
-    payment_type VARCHAR(30) NOT NULL, -- DEPOSIT, BALANCE, FULL
-    payment_method VARCHAR(50), -- VISA, MASTER, FRIMI, GENIE, etc.
-    payhere_payment_id VARCHAR(255),
-    payhere_status_code INTEGER,
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- PENDING, SUCCESS, FAILED, CANCELLED
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    raw_ipn_payload TEXT
-);
-
-CREATE INDEX IF NOT EXISTS idx_payments_order_id ON public.payments(order_id);
-CREATE INDEX IF NOT EXISTS idx_payments_payhere_id ON public.payments(payhere_payment_id);
-
--- 5. APPOINTMENTS TABLE (In-Person Atelier Consultations)
+-- 4. APPOINTMENTS TABLE (In-Person Atelier Consultations)
 CREATE TABLE IF NOT EXISTS public.appointments (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

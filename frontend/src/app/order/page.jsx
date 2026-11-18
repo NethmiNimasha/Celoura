@@ -1590,19 +1590,6 @@ function OrderFormContent() {
                 <p><strong className="text-zinc-500">Neckline:</strong> {neckline || "Standard / As in Design"}</p>
                 <p><strong className="text-zinc-500">Sleeve:</strong> {sleeve || "Standard / As in Design"}</p>
               </div>
-
-              {/* Atelier Fitting & Payment Notice */}
-              <div className="border-t border-zinc-800 pt-4">
-                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="text-xs space-y-1">
-                    <p className="font-semibold text-white">Atelier Fitting & Payment</p>
-                    <p className="text-zinc-300">
-                      No upfront online payment required. Settle your deposit and fitting fees directly at our Akuressa atelier (cash, card, or bank transfer) during your in-person styling consultation.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Missing Fields Error Alert */}
