@@ -102,7 +102,13 @@ export function updateOrderStatus(orderId, newStatus) {
 
 export function addOrder(newOrder) {
   const orders = getSavedOrders();
-  const updated = [newOrder, ...orders];
+  const existingIndex = orders.findIndex((o) => o.id && newOrder.id && o.id.toLowerCase() === newOrder.id.toLowerCase());
+  let updated;
+  if (existingIndex >= 0) {
+    updated = orders.map((o) => (o.id.toLowerCase() === newOrder.id.toLowerCase() ? newOrder : o));
+  } else {
+    updated = [newOrder, ...orders];
+  }
   saveOrders(updated);
   return updated;
 }

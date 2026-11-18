@@ -25,13 +25,14 @@ import {
   ORDER_STATUSES, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getOrderByIdApi, getAllOrdersApi, initiatePayHerePaymentApi } from "../../lib/api";
+import { getOrderByIdApi, getAllOrdersApi, initiatePayHerePaymentApi, updateOrderStatusApi } from "../../lib/api";
 import { launchPayHereCheckout } from "../../lib/payhere";
 import { CreditCard, Loader2 } from "lucide-react";
+import PayHereSimulatorModal from "../../components/PayHereSimulatorModal";
 
 function TrackContent() {
   const searchParams = useSearchParams();
-  const queryOrderId = searchParams.get("orderId");
+  const queryOrderId = searchParams.get("orderId") || searchParams.get("id");
 
   const [searchInput, setSearchInput] = useState(queryOrderId || "");
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -40,34 +41,42 @@ function TrackContent() {
   const [isSearching, setIsSearching] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [payError, setPayError] = useState("");
+  const [payHereModalData, setPayHereModalData] = useState(null);
+  const [payHereModalType, setPayHereModalType] = useState("DEPOSIT");
 
-  const handlePayWithPayHere = async (paymentType = "DEPOSIT") => {
+  const handlePayWithPayHere = (paymentType = "DEPOSIT") => {
     if (!selectedOrder) return;
-    setIsPaying(true);
     setPayError("");
-    try {
-      const checkoutConfig = await initiatePayHerePaymentApi({
-        orderId: selectedOrder.id,
-        paymentType,
-      });
+    setPayHereModalData(selectedOrder);
+    setPayHereModalType(paymentType);
+  };
 
-      await launchPayHereCheckout({
-        checkoutConfig,
-        onCompleted: (orderId) => {
-          window.location.href = `/order/payment-success?orderId=${encodeURIComponent(selectedOrder.id)}`;
-        },
-        onDismissed: () => {
-          setIsPaying(false);
-        },
-        onError: (err) => {
-          console.error("PayHere error:", err);
-          setPayError("Payment was cancelled or could not be processed.");
-          setIsPaying(false);
-        },
-      });
-    } catch (err) {
-      setPayError(err.message || "Failed to launch PayHere payment. Please try again.");
-      setIsPaying(false);
+  const handlePayHereSuccess = async (paymentDetails) => {
+    if (!selectedOrder) return;
+    const updatedOrder = {
+      ...selectedOrder,
+      depositPaid: (selectedOrder.depositPaid || 0) + paymentDetails.amount,
+      paymentStatus: (selectedOrder.depositPaid || 0) + paymentDetails.amount >= (selectedOrder.totalAmount || 0) ? "Fully Paid" : "Deposit Paid",
+      status: selectedOrder.status === "Pending" ? "Confirmed" : selectedOrder.status,
+      notes: (selectedOrder.notes || "") + `\n[PayHere Verified] LKR ${paymentDetails.amount.toLocaleString()} received via ${paymentDetails.paymentMethod} (Ref: ${paymentDetails.transactionId}).`,
+    };
+
+    // Update in local storage
+    const existingList = getSavedOrders();
+    const nextList = existingList.map((o) => (o.id === updatedOrder.id ? updatedOrder : o));
+    if (!existingList.some((o) => o.id === updatedOrder.id)) {
+      nextList.unshift(updatedOrder);
+    }
+    localStorage.setItem("celoura_orders", JSON.stringify(nextList));
+
+    setSelectedOrder(updatedOrder);
+    setPayHereModalData(null);
+
+    // Sync to backend if running
+    try {
+      await updateOrderStatusApi(updatedOrder.id, updatedOrder.status);
+    } catch (e) {
+      console.warn("Backend order status update warning:", e);
     }
   };
 
@@ -517,6 +526,15 @@ function TrackContent() {
           </div>
         </div>
       )}
+
+      {/* PayHere Simulator Modal for Local Test / Demo Mode */}
+      <PayHereSimulatorModal
+        isOpen={Boolean(payHereModalData)}
+        onClose={() => setPayHereModalData(null)}
+        onSuccess={handlePayHereSuccess}
+        orderData={payHereModalData}
+        paymentType={payHereModalType}
+      />
     </div>
   );
 }

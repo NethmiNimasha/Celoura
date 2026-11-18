@@ -1,5 +1,4 @@
 import "./globals.css";
-import Script from "next/script";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -39,7 +38,6 @@ export default function RootLayout({ children }) {
           {children}
         </main>
         <Footer />
-        <Script src="https://www.payhere.lk/lib/payhere.js" strategy="lazyOnload" />
       </body>
     </html>
   );

@@ -34,8 +34,9 @@ import {
   addOrder, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getStoredUser, createOrderApi, getAllDesignsApi, initiatePayHerePaymentApi } from "../../lib/api";
+import { getStoredUser, createOrderApi, getAllDesignsApi, initiatePayHerePaymentApi, updateOrderStatusApi } from "../../lib/api";
 import { launchPayHereCheckout } from "../../lib/payhere";
+import PayHereSimulatorModal from "../../components/PayHereSimulatorModal";
 
 const COLOR_PALETTES = [
   { name: "Obsidian Black", hex: "#0a0a0c", border: "#d4af37", text: "text-amber-300" },
@@ -155,6 +156,8 @@ function OrderFormContent() {
   const [referenceFile, setReferenceFile] = useState(null);
   const [paymentPreference, setPaymentPreference] = useState("DEPOSIT"); // DEPOSIT, FULL, OFFLINE
   const [isLaunchingPayHere, setIsLaunchingPayHere] = useState(false);
+  const [payHereModalData, setPayHereModalData] = useState(null);
+  const [payHereModalType, setPayHereModalType] = useState("DEPOSIT");
 
   // Errors state
   const [errors, setErrors] = useState({});
@@ -459,47 +462,42 @@ function OrderFormContent() {
       // Synchronize in local storage
       addOrder(newOrder);
 
-      // Launch PayHere payment popup immediately if online payment is chosen
+      // Option A: If customer chose online payment, launch interactive PayHere Simulator immediately!
       if (paymentPreference !== "OFFLINE") {
-        try {
-          setIsLaunchingPayHere(true);
-          const payType = paymentPreference === "FULL" ? "FULL" : "DEPOSIT";
-          const checkoutConfig = await initiatePayHerePaymentApi({
-            orderId: newOrder.id,
-            paymentType: payType,
-            orderData: newOrder,
-          });
-
-          await launchPayHereCheckout({
-            checkoutConfig,
-            onCompleted: () => {
-              window.location.href = `/order/payment-success?orderId=${encodeURIComponent(newOrder.id)}`;
-            },
-            onDismissed: () => {
-              setIsLaunchingPayHere(false);
-              setSubmittedOrder(newOrder);
-              window.scrollTo({ top: 80, behavior: "smooth" });
-            },
-            onError: (err) => {
-              console.error("PayHere popup error:", err);
-              setIsLaunchingPayHere(false);
-              setSubmittedOrder(newOrder);
-              window.scrollTo({ top: 80, behavior: "smooth" });
-            },
-          });
-          return;
-        } catch (payErr) {
-          console.warn("PayHere checkout initiation warning:", payErr);
-          setIsLaunchingPayHere(false);
-        }
+        setPayHereModalData(newOrder);
+        setPayHereModalType(paymentPreference === "FULL" ? "FULL" : "DEPOSIT");
+        setIsSubmitting(false);
+        return;
       }
 
-      // If offline payment or modal was dismissed, show standard confirmation screen
+      // If offline payment, show standard confirmation screen
       setSubmittedOrder(newOrder);
       window.scrollTo({ top: 80, behavior: "smooth" });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePayHereSuccess = async (paymentDetails) => {
+    if (!payHereModalData) return;
+    const paidOrder = {
+      ...payHereModalData,
+      depositPaid: (payHereModalData.depositPaid || 0) + paymentDetails.amount,
+      paymentStatus: paymentDetails.paymentType === "FULL" ? "Fully Paid" : "Deposit Paid",
+      status: payHereModalData.status === "Pending" ? "Confirmed" : payHereModalData.status,
+      notes: (payHereModalData.notes || "") + `\n[PayHere Verified] LKR ${paymentDetails.amount.toLocaleString()} received via ${paymentDetails.paymentMethod} (Ref: ${paymentDetails.transactionId}).`,
+    };
+
+    // Update in local state & localStorage
+    addOrder(paidOrder);
+
+    // Sync to backend if running
+    try {
+      await updateOrderStatusApi(paidOrder.id, paidOrder.status);
+    } catch (e) {}
+
+    setPayHereModalData(null);
+    router.push(`/order/payment-success?orderId=${encodeURIComponent(paidOrder.id)}`);
   };
 
   // SUCCESS SCREEN
@@ -580,40 +578,14 @@ function OrderFormContent() {
               </p>
               <button
                 type="button"
-                disabled={isLaunchingPayHere}
-                onClick={async () => {
-                  try {
-                    setIsLaunchingPayHere(true);
-                    const checkoutConfig = await initiatePayHerePaymentApi({
-                      orderId: submittedOrder.id,
-                      paymentType: "DEPOSIT",
-                    });
-                    await launchPayHereCheckout({
-                      checkoutConfig,
-                      onCompleted: () => {
-                        window.location.href = `/order/payment-success?orderId=${encodeURIComponent(submittedOrder.id)}`;
-                      },
-                      onDismissed: () => setIsLaunchingPayHere(false),
-                      onError: () => setIsLaunchingPayHere(false),
-                    });
-                  } catch (e) {
-                    setIsLaunchingPayHere(false);
-                    alert("Could not open PayHere checkout. Please retry via the track page.");
-                  }
+                onClick={() => {
+                  setPayHereModalData(submittedOrder);
+                  setPayHereModalType("DEPOSIT");
                 }}
-                className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
+                className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm cursor-pointer"
               >
-                {isLaunchingPayHere ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-black" />
-                    <span>Connecting to PayHere...</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4" />
-                    <span>Pay 50% Advance Atelier Deposit (LKR {Math.round((submittedOrder.totalAmount || 0) * 0.5).toLocaleString()})</span>
-                  </>
-                )}
+                <CreditCard className="h-4 w-4" />
+                <span>Pay 50% Advance Atelier Deposit (LKR {Math.round((submittedOrder.totalAmount || 0) * 0.5).toLocaleString()})</span>
               </button>
             </div>
           )}
@@ -641,6 +613,15 @@ function OrderFormContent() {
             </a>
           </div>
         </div>
+
+        {/* PayHere Interactive Sandbox Simulator Modal for Success Screen */}
+        <PayHereSimulatorModal
+          isOpen={Boolean(payHereModalData)}
+          onClose={() => setPayHereModalData(null)}
+          onSuccess={handlePayHereSuccess}
+          orderData={payHereModalData}
+          paymentType={payHereModalType}
+        />
       </div>
     );
   }
@@ -1866,6 +1847,21 @@ function OrderFormContent() {
             </button>
           </div>
         )}
+
+        {/* PayHere Simulator Modal for Local Test / Demo Mode */}
+        <PayHereSimulatorModal
+          isOpen={Boolean(payHereModalData)}
+          onClose={() => {
+            if (!submittedOrder && payHereModalData) {
+              setSubmittedOrder(payHereModalData);
+              window.scrollTo({ top: 80, behavior: "smooth" });
+            }
+            setPayHereModalData(null);
+          }}
+          onSuccess={handlePayHereSuccess}
+          orderData={payHereModalData}
+          paymentType={payHereModalType}
+        />
 
       </div>
     </div>
