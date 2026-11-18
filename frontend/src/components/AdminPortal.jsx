@@ -1341,12 +1341,12 @@ export default function AdminPortal() {
               </div>
             </div>
 
-            {/* PayHere Financial & Billing Summary */}
+            {/* Atelier Financial & Billing Summary */}
             <div className="rounded-2xl border border-amber-500/30 bg-zinc-950 p-5 mb-6">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-3">
                 <span className="font-bold text-amber-300 text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <CreditCard className="h-4 w-4" />
-                  <span>Atelier Billing & PayHere Status</span>
+                  <span>Atelier Billing & Payment Status</span>
                 </span>
                 <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                   (selectedOrderDetails.depositPaid || 0) >= (selectedOrderDetails.totalAmount || 1)

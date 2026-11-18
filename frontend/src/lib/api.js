@@ -554,60 +554,9 @@ export async function deleteReviewApi(id) {
 
 /**
  * ========================================================
- * PAYHERE ONLINE PAYMENT GATEWAY REST APIS
+ * PAYMENTS & TRANSACTIONS REST APIS
  * ========================================================
  */
-
-/**
- * Initiate a PayHere payment (50% Deposit, Balance, or Full Payment)
- * Seamlessly falls back to client-side PayHere sandbox configuration if backend is offline
- */
-export async function initiatePayHerePaymentApi({ orderId, paymentType = "DEPOSIT", orderData = null }) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/payments/payhere/initiate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, paymentType }),
-    });
-
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    console.warn("Backend PayHere initiate endpoint unavailable, activating sandbox checkout:", err);
-  }
-
-  // Resilient Client-Side Sandbox Configuration if Backend is Offline
-  const total = Number(orderData?.totalAmount || 2000);
-  const payableAmount = paymentType === "FULL" ? total : Math.round(total * 0.5);
-
-  const fullName = orderData?.customerName || "Valued Customer";
-  const nameParts = fullName.trim().split(" ");
-  const firstName = nameParts[0] || "Valued";
-  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Customer";
-
-  const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-
-  return {
-    sandbox: true,
-    merchantId: "1220000", // Official PayHere Sandbox Merchant ID
-    orderId: `${orderId}-${paymentType.substring(0, 3)}-${Date.now() % 10000}`,
-    items: `${paymentType === "FULL" ? "Full Payment" : "50% Advance Atelier Deposit"} - ${orderData?.designTitle || "Custom Dress"}`,
-    amount: payableAmount,
-    currency: "LKR",
-    paymentType,
-    firstName,
-    lastName,
-    email: orderData?.customerEmail || "customer@example.com",
-    phone: orderData?.customerPhone || "0771699754",
-    address: "Celoura Atelier Client",
-    city: "Akuressa",
-    country: "Sri Lanka",
-    notifyUrl: `${API_BASE_URL}/payments/payhere/notify`,
-    returnUrl: `${origin}/order/payment-success?orderId=${encodeURIComponent(orderId)}`,
-    cancelUrl: `${origin}/order/payment-cancelled?orderId=${encodeURIComponent(orderId)}`,
-  };
-}
 
 /**
  * Retrieve all payment transactions for an order

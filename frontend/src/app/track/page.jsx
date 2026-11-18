@@ -1,5 +1,7 @@
 "use client";
 
+// Celoura Real-time Custom Dress Order Tracker
+
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -25,10 +27,7 @@ import {
   ORDER_STATUSES, 
   BUSINESS_INFO 
 } from "../../lib/celouraData";
-import { getOrderByIdApi, getAllOrdersApi, initiatePayHerePaymentApi, updateOrderStatusApi } from "../../lib/api";
-import { launchPayHereCheckout } from "../../lib/payhere";
-import { CreditCard, Loader2 } from "lucide-react";
-import PayHereSimulatorModal from "../../components/PayHereSimulatorModal";
+import { getOrderByIdApi, getAllOrdersApi } from "../../lib/api";
 
 function TrackContent() {
   const searchParams = useSearchParams();
@@ -39,46 +38,6 @@ function TrackContent() {
   const [orders, setOrders] = useState([]);
   const [notFound, setNotFound] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
-  const [payError, setPayError] = useState("");
-  const [payHereModalData, setPayHereModalData] = useState(null);
-  const [payHereModalType, setPayHereModalType] = useState("DEPOSIT");
-
-  const handlePayWithPayHere = (paymentType = "DEPOSIT") => {
-    if (!selectedOrder) return;
-    setPayError("");
-    setPayHereModalData(selectedOrder);
-    setPayHereModalType(paymentType);
-  };
-
-  const handlePayHereSuccess = async (paymentDetails) => {
-    if (!selectedOrder) return;
-    const updatedOrder = {
-      ...selectedOrder,
-      depositPaid: (selectedOrder.depositPaid || 0) + paymentDetails.amount,
-      paymentStatus: (selectedOrder.depositPaid || 0) + paymentDetails.amount >= (selectedOrder.totalAmount || 0) ? "Fully Paid" : "Deposit Paid",
-      status: selectedOrder.status === "Pending" ? "Confirmed" : selectedOrder.status,
-      notes: (selectedOrder.notes || "") + `\n[PayHere Verified] LKR ${paymentDetails.amount.toLocaleString()} received via ${paymentDetails.paymentMethod} (Ref: ${paymentDetails.transactionId}).`,
-    };
-
-    // Update in local storage
-    const existingList = getSavedOrders();
-    const nextList = existingList.map((o) => (o.id === updatedOrder.id ? updatedOrder : o));
-    if (!existingList.some((o) => o.id === updatedOrder.id)) {
-      nextList.unshift(updatedOrder);
-    }
-    localStorage.setItem("celoura_orders", JSON.stringify(nextList));
-
-    setSelectedOrder(updatedOrder);
-    setPayHereModalData(null);
-
-    // Sync to backend if running
-    try {
-      await updateOrderStatusApi(updatedOrder.id, updatedOrder.status);
-    } catch (e) {
-      console.warn("Backend order status update warning:", e);
-    }
-  };
 
   const findOrder = async (query) => {
     if (!query) return;
@@ -395,55 +354,15 @@ function TrackContent() {
                     </span>
                   </div>
 
-                  {/* PayHere Checkout Action */}
-                  <div className="pt-3 border-t border-zinc-800/80">
-                    {payError && (
-                      <p className="text-xs text-red-400 mb-2">{payError}</p>
-                    )}
-                    {(selectedOrder.depositPaid || 0) >= (selectedOrder.totalAmount || 1) ? (
-                      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-center text-xs text-emerald-300 font-semibold flex items-center justify-center gap-1.5">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                        <span>Payment Fully Settled (LKR {(selectedOrder.totalAmount || 0).toLocaleString()})</span>
-                      </div>
-                    ) : (selectedOrder.depositPaid || 0) === 0 ? (
-                      <button
-                        type="button"
-                        disabled={isPaying}
-                        onClick={() => handlePayWithPayHere("DEPOSIT")}
-                        className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
-                      >
-                        {isPaying ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Opening PayHere Checkout...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard className="h-4 w-4" />
-                            <span>Pay 50% Advance Atelier Deposit (LKR {Math.round((selectedOrder.totalAmount || 0) * 0.5).toLocaleString()})</span>
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={isPaying}
-                        onClick={() => handlePayWithPayHere("BALANCE")}
-                        className="btn-gold w-full rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-gold-sm"
-                      >
-                        {isPaying ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Opening PayHere Checkout...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard className="h-4 w-4" />
-                            <span>Pay Remaining Balance (LKR {Math.max(0, (selectedOrder.totalAmount || 0) - (selectedOrder.depositPaid || 0)).toLocaleString()})</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+                  {/* Atelier Deposit & Settlement Note */}
+                  <div className="pt-3 border-t border-zinc-800/80 text-[11px] text-zinc-400">
+                    <p className="flex items-center gap-1.5 text-amber-300 font-semibold mb-1">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Atelier Deposit & Balance Settlement</span>
+                    </p>
+                    <p>
+                      Deposits and balances can be settled via cash, card, or direct bank transfer during your fitting consultation at our Akuressa studio.
+                    </p>
                   </div>
                 </div>
 
@@ -526,15 +445,6 @@ function TrackContent() {
           </div>
         </div>
       )}
-
-      {/* PayHere Simulator Modal for Local Test / Demo Mode */}
-      <PayHereSimulatorModal
-        isOpen={Boolean(payHereModalData)}
-        onClose={() => setPayHereModalData(null)}
-        onSuccess={handlePayHereSuccess}
-        orderData={payHereModalData}
-        paymentType={payHereModalType}
-      />
     </div>
   );
 }
