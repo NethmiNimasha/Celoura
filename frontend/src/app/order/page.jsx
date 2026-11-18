@@ -403,7 +403,10 @@ function OrderFormContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep(4)) return;
+    if (!validateStep(4)) {
+      window.scrollTo({ top: 180, behavior: "smooth" });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -431,6 +434,7 @@ function OrderFormContent() {
         status: "Pending",
         totalAmount: estimatedTotal,
         depositPaid: 0,
+        paymentStatus: paymentPreference === "OFFLINE" ? "Unpaid" : "Pending Payment",
         eventDate,
         orderDate: new Date().toISOString().split("T")[0],
         estimatedCompletion: eventDate,
@@ -442,7 +446,7 @@ function OrderFormContent() {
         assignedArtisan: "Celoura Master Tailor (Awaiting review)",
       };
 
-      // Persist to Spring Boot backend database
+      // Persist to Spring Boot backend database if available
       try {
         const savedBackendOrder = await createOrderApi(newOrder);
         if (savedBackendOrder && savedBackendOrder.id) {
@@ -452,12 +456,10 @@ function OrderFormContent() {
         console.warn("Backend order creation warning (fallback to local state):", backendErr);
       }
 
-      // Synchronize in local storage & update UI
+      // Synchronize in local storage
       addOrder(newOrder);
-      setSubmittedOrder(newOrder);
-      window.scrollTo({ top: 80, behavior: "smooth" });
 
-      // Automatically launch PayHere popup if online payment is chosen
+      // Launch PayHere payment popup immediately if online payment is chosen
       if (paymentPreference !== "OFFLINE") {
         try {
           setIsLaunchingPayHere(true);
@@ -465,6 +467,7 @@ function OrderFormContent() {
           const checkoutConfig = await initiatePayHerePaymentApi({
             orderId: newOrder.id,
             paymentType: payType,
+            orderData: newOrder,
           });
 
           await launchPayHereCheckout({
@@ -474,17 +477,26 @@ function OrderFormContent() {
             },
             onDismissed: () => {
               setIsLaunchingPayHere(false);
+              setSubmittedOrder(newOrder);
+              window.scrollTo({ top: 80, behavior: "smooth" });
             },
             onError: (err) => {
-              console.error("PayHere launch error:", err);
+              console.error("PayHere popup error:", err);
               setIsLaunchingPayHere(false);
+              setSubmittedOrder(newOrder);
+              window.scrollTo({ top: 80, behavior: "smooth" });
             },
           });
+          return;
         } catch (payErr) {
           console.warn("PayHere checkout initiation warning:", payErr);
           setIsLaunchingPayHere(false);
         }
       }
+
+      // If offline payment or modal was dismissed, show standard confirmation screen
+      setSubmittedOrder(newOrder);
+      window.scrollTo({ top: 80, behavior: "smooth" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1774,6 +1786,17 @@ function OrderFormContent() {
               </div>
             </div>
 
+            {/* Missing Fields Error Alert */}
+            {Object.keys(errors).length > 0 && (
+              <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-xs text-red-300 flex items-start gap-3 animate-fade-in">
+                <AlertCircle className="h-5 w-5 shrink-0 text-red-400 mt-0.5" />
+                <div>
+                  <strong className="block text-white font-semibold mb-0.5">Please complete required fields above to proceed:</strong>
+                  <span className="text-[11px] text-red-300">{Object.values(errors).join(" • ")}</span>
+                </div>
+              </div>
+            )}
+
             {/* Submit Action */}
             <div className="pt-2 flex flex-col sm:flex-row justify-between gap-4">
               <button
@@ -1787,18 +1810,28 @@ function OrderFormContent() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLaunchingPayHere}
                 className="btn-gold rounded-full px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-gold-md disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? (
+                {isSubmitting || isLaunchingPayHere ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-black" />
-                    <span>Transmitting Order to Atelier...</span>
+                    <span>
+                      {paymentPreference !== "OFFLINE"
+                        ? "Opening PayHere Checkout Modal..."
+                        : "Transmitting Order to Atelier..."}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Scissors className="h-4 w-4" />
-                    <span>Submit Custom Dress Request</span>
+                    <CreditCard className="h-4 w-4" />
+                    <span>
+                      {paymentPreference === "DEPOSIT"
+                        ? `Pay 50% Deposit (LKR ${Math.round(estimatedTotal * 0.5).toLocaleString()}) via PayHere`
+                        : paymentPreference === "FULL"
+                        ? `Pay Full (LKR ${estimatedTotal.toLocaleString()}) via PayHere`
+                        : "Submit Custom Dress Request"}
+                    </span>
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
