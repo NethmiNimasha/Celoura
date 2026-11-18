@@ -1,5 +1,7 @@
 "use client";
 
+// Celoura Bespoke Custom Tailoring Studio
+
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
